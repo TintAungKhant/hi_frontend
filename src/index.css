@@ -1,13 +1,249 @@
+@import "./variables.css";
+@import "./reset.css";
+@import "./grid.css";
+@import url("https://fonts.googleapis.com/css2?family=Metrophobic&display=swap");
+
 body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  font-family: "Metrophobic", sans-serif;
+  font-size: var(--text);
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+/* list */
+.list__header {
+  font-size: var(--title);
+}
+
+.list--action .list__item {
+  cursor: pointer;
+}
+
+.list--action .list__item:hover {
+  background-color: rgba(97, 94, 240, 0.05);
+}
+
+.list__item {
+  display: flex;
+  padding: 0.75rem;
+  border-radius: var(--border_radius);
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.list__item.active {
+  background-color: var(--light_purple);
+}
+
+.list__item__image {
+  max-width: 46px;
+  max-height: 46px;
+  overflow: hidden;
+  border-radius: var(--border_radius);
+  margin-right: 1rem;
+  flex-shrink: 0;
+}
+
+.list__item__image img {
+  width: 100%;
+}
+
+.list__item__content {
+  flex: 1;
+  overflow: hidden;
+}
+
+.list__item__content__title {
+  font-size: 16px;
+  font-weight: var(--bold);
+}
+
+.list__item__content__text {
+  color: var(--light_dark);
+  font-weight: var(--bold);
+}
+
+.list__item_action {
+  display: flex;
+  gap: 0.5rem;
+}
+/* list */
+
+/* font */
+.text {
+  font-size: var(--text);
+}
+
+.text--light-dark {
+  color: var(--light_dark);
+}
+
+.text--bold {
+  font-weight: var(--bold);
+}
+/* font */
+
+/* input */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form__input {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.form__input > label {
+  font-weight: 600;
+}
+
+.form__input--tip {
+  color: var(--light_dark);
+}
+
+.form__input--error {
+  color: var(--red);
+  font-size: 12px;
+}
+
+.form__input--group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.text-input {
+  width: 100%;
+}
+
+.text-input input[type="text"],
+.text-input input[type="email"],
+.text-input input[type="password"],
+.text-input input[type="number"] {
+  background-color: var(--gray);
+  outline: none;
+  border: none;
+  padding: 1rem;
+  border-radius: var(--border_radius);
+  width: 100%;
+}
+/* input */
+
+/* button */
+.btn {
+  padding: 1rem;
+  outline: none;
+  border: none;
+  background-color: unset;
+  text-transform: uppercase;
+  font-weight: 600;
+  border-radius: var(--border_radius);
+  cursor: pointer;
+}
+
+.btn--light-purple {
+  color: var(--purple);
+  background-color: var(--light_purple);
+}
+
+.btn--light-purple:hover {
+  color: var(--white);
+  background-color: var(--purple);
+}
+
+.btn--purple {
+  color: var(--white);
+  background-color: var(--purple);
+}
+
+.btn--purple:hover {
+  color: var(--purple);
+  background-color: var(--light_purple);
+}
+
+.btn--light-red {
+  color: var(--red);
+  background-color: var(--light_red);
+}
+
+.btn--light-red:hover {
+  color: var(--white);
+  background-color: var(--red);
+}
+/* button */
+
+/* card */
+.card {
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.08);
+  border-radius: var(--border_radius);
+  overflow: hidden;
+}
+
+.card__header, .card__body, .card__footer {
+  padding: 1.5rem;
+}
+
+.card__header {
+  border-bottom: 1px solid var(--gray);
+}
+
+.card__header h2 {
+  font-size: var(--title);
+}
+
+.card__footer {
+  border-top: 1px solid var(--gray);
+}
+/* card */
+
+.w-100 {
+  width: 100%;
+}
+
+.badge {
+  color: var(--white);
+  background-color: var(--purple);
+  padding: 2px 5px;
+  border-radius: 5px;
+  font-size: 12px;
+}
+
+.online-badge::before {
+  content: "";
+  display: inline-block;
+  background-color: var(--green);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+}
+
+.offline-badge::before {
+  content: "";
+  display: inline-block;
+  background-color: var(--gray);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media screen and (max-width: 576px) {
+  /* list */
+  .list__item_action {
+    width: 100%;
+    margin-top: 1rem;
+  }
+  /* list */
 }

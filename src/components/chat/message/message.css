@@ -1,0 +1,70 @@
+/* chat-message */
+.message {
+  display: flex;
+  width: 100%;
+}
+
+.message__avatar {
+  max-width: 35px;
+  max-height: 35px;
+  overflow: hidden;
+  border-radius: var(--border_radius);
+}
+
+.message--left .message__avatar {
+  margin-right: 1rem;
+}
+
+.message--right .message__avatar {
+  margin-left: 1rem;
+}
+
+.message__avatar img {
+  width: 100%;
+}
+
+.message__contents {
+  display: flex;
+  flex-direction: column;
+}
+
+.message--left .message__contents {
+  align-items: flex-start;
+}
+
+.message--right .message__contents {
+  align-items: flex-end;
+  width: 100%;
+}
+
+.message__content {
+  padding: 1rem;
+  border-radius: var(--border_radius);
+  margin-bottom: 0.5rem;
+  max-width: 80%;
+}
+
+.message--left .message__content {
+  background-color: var(--gray);
+}
+
+.message--right .message__content {
+  background-color: var(--purple);
+  color: var(--white);
+}
+/* chat-messages */
+
+@media screen and (max-width: 576px) {
+  /* chat-messages */
+  .message--left .message__avatar {
+    display: none;
+  }
+  /* chat-messages */
+}
+@media screen and (max-width: 992px) {
+  /* chat-messages */
+  .message--right .message__avatar {
+    display: none;
+  }
+  /* chat-messages */
+}

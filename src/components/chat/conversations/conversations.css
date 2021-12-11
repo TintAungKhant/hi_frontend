@@ -1,0 +1,18 @@
+/* chat-conversation */
+.chat__section--conversations {
+  max-width: 340px;
+  border-right: 1px solid var(--gray);
+}
+
+.chat__section--conversations .chat__section__header .text-input {
+  margin: 0.75rem;
+}
+/* chat-conversation */
+
+@media screen and (max-width: 768px) {
+  /* chat-conversation */
+  .chat__section--conversations {
+    display: none;
+  }
+  /* chat-conversation */
+}
