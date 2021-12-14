@@ -88,6 +88,22 @@ body {
   gap: 0.5rem;
 }
 
+.form__alert {
+  padding: 1rem;
+  border-radius: var(--border_radius);
+  font-weight: var(--bold);
+}
+
+.form__alert--red {
+  background-color: var(--red);
+  color: var(--white);
+}
+
+.form__alert--green {
+  background-color: var(--green);
+  color: var(--white);
+}
+
 .form__input {
   display: flex;
   flex-direction: column;
@@ -120,7 +136,8 @@ body {
 .text-input input[type="text"],
 .text-input input[type="email"],
 .text-input input[type="password"],
-.text-input input[type="number"] {
+.text-input input[type="number"],
+.text-input input[type="date"] {
   background-color: var(--gray);
   outline: none;
   border: none;

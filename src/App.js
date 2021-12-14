@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import AuthContext from "./contexts/AuthContext";
+import { getProfile } from "./api";
 import "./App.css";
-import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/navbar/Navbar";
 import {
   Login,
@@ -12,72 +14,136 @@ import {
   Profile,
 } from "./pages";
 
+const RequiredAuth = ({ children }) => {
+  return (
+    <React.Suspense fallback={<></>}>
+      <AuthContext.Consumer>
+        {({ authInfo }) => {
+          if (authInfo.auth) {
+            return children;
+          }
+          return <Navigate to="/login" />;
+        }}
+      </AuthContext.Consumer>
+    </React.Suspense>
+  );
+};
+
+const MustNoAuth = ({ children }) => {
+  return (
+    <React.Suspense fallback={<></>}>
+      <AuthContext.Consumer>
+        {({ authInfo }) => {
+          if (authInfo.auth) {
+            return <Navigate to="/explore" />;
+          }
+          return children;
+        }}
+      </AuthContext.Consumer>
+    </React.Suspense>
+  );
+};
+
 function App() {
+  const [authInfo, setAuthInfo] = useState({
+    auth: false,
+    user: {},
+  });
+
+  const [loading, setLoading] = useState(true);
+
+  const checkAuth = async () => {
+    await getProfile()
+      .then((res) => {
+        setAuthInfo({
+          auth: true,
+          user: res.data.data.profile,
+        });
+      })
+      .catch(() => {
+        setAuthInfo({
+          auth: false,
+          user: {},
+        });
+      });
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="App">
-      <Navbar />
-      <Routes>
-        <Route
-          path="login"
-          element={
-            <React.Suspense fallback={<></>}>
-              <Login />
-            </React.Suspense>
-          }
-        />
-        <Route
-          path="register"
-          element={
-            <React.Suspense fallback={<></>}>
-              <Register />
-            </React.Suspense>
-          }
-        />
-        <Route
-          path="chat"
-          element={
-            <React.Suspense fallback={<></>}>
-              <Chat />
-            </React.Suspense>
-          }
-        />
-        <Route
-          path="explore"
-          element={
-            <React.Suspense fallback={<></>}>
-              <Explore />
-            </React.Suspense>
-          }
-        />
-        <Route
-          path="friends"
-          element={
-            <React.Suspense fallback={<></>}>
-              <Friends />
-            </React.Suspense>
-          }
-        />
-        <Route path="profile">
-          <Route path="me">
+      <AuthContext.Provider value={{ authInfo, setAuthInfo }}>
+        <Navbar />
+        <Routes>
+          <Route
+            path="login"
+            element={
+              <MustNoAuth>
+                <Login />
+              </MustNoAuth>
+            }
+          />
+          <Route
+            path="register"
+            element={
+              <MustNoAuth>
+                <Register />
+              </MustNoAuth>
+            }
+          />
+          <Route
+            path="chat"
+            element={
+              <RequiredAuth>
+                <Chat />
+              </RequiredAuth>
+            }
+          />
+          <Route
+            path="explore"
+            element={
+              <RequiredAuth>
+                <Explore />
+              </RequiredAuth>
+            }
+          />
+          <Route
+            path="friends"
+            element={
+              <RequiredAuth>
+                <Friends />
+              </RequiredAuth>
+            }
+          />
+          <Route path="profile">
+            <Route path="me">
+              <Route
+                path="edit"
+                element={
+                  <RequiredAuth>
+                    <MyProfileEdit />
+                  </RequiredAuth>
+                }
+              />
+            </Route>
             <Route
-              path="edit"
+              path=":id"
               element={
-                <React.Suspense fallback={<></>}>
-                  <MyProfileEdit />
-                </React.Suspense>
+                <RequiredAuth>
+                  <Profile />
+                </RequiredAuth>
               }
             />
           </Route>
-          <Route
-            path=":id"
-            element={
-              <React.Suspense fallback={<></>}>
-                <Profile />
-              </React.Suspense>
-            }
-          />
-        </Route>
-      </Routes>
+        </Routes>
+      </AuthContext.Provider>
     </div>
   );
 }

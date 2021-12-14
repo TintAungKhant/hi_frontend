@@ -20,11 +20,18 @@
   justify-content: space-between;
 }
 
-.navbar__navs li a {
+.navbar__navs li button {
+  outline: none;
+  background-color: unset;
+  border: none;
+}
+
+.navbar__navs li a, .navbar__navs li button {
   display: flex;
   padding: 0.8rem;
   align-items: center;
   gap: 0.5rem;
+  cursor: pointer;
 }
 
 .navbar__navs li i {
