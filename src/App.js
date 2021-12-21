@@ -98,14 +98,24 @@ function App() {
               </MustNoAuth>
             }
           />
-          <Route
-            path="chat"
-            element={
-              <RequiredAuth>
-                <Chat />
-              </RequiredAuth>
-            }
-          />
+          <Route path="chat">
+            <Route
+              path=""
+              element={
+                <RequiredAuth>
+                  <Chat />
+                </RequiredAuth>
+              }
+            />
+            <Route
+              path="user/:user_id"
+              element={
+                <RequiredAuth>
+                  <Chat />
+                </RequiredAuth>
+              }
+            />
+          </Route>
           <Route
             path="explore"
             element={
