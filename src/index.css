@@ -188,6 +188,15 @@ body {
   color: var(--white);
   background-color: var(--red);
 }
+
+.btn:disabled {
+  color: var(--white);
+  background-color: var(--gray);
+}
+
+.btn:disabled:hover {
+  background-color: var(--gray);
+}
 /* button */
 
 /* card */
@@ -197,7 +206,9 @@ body {
   overflow: hidden;
 }
 
-.card__header, .card__body, .card__footer {
+.card__header,
+.card__body,
+.card__footer {
   padding: 1.5rem;
 }
 
