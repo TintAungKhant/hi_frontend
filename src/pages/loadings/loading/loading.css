@@ -1,0 +1,29 @@
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.loading__loader {
+  max-width: 100px;
+}
+
+.loading__loader img {
+  width: 100%;
+  height: auto;
+}
+
+.loading__message {
+  position: fixed;
+  padding: 40px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 12px;
+}
+
+.loading__text {
+  text-align: center;
+  font-size: var(--title);
+  font-weight: 600;
+}
