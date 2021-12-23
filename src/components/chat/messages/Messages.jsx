@@ -6,6 +6,7 @@ import ChatContext from "../../../contexts/ChatContext";
 import AuthContext from "../../../contexts/AuthContext";
 import "./messages.css";
 import Message from "../message/Message";
+import Loading from "../../../pages/loadings/loading/Loading";
 
 const hoc = (Child) => {
   return (props) => {
@@ -40,21 +41,25 @@ class Messages extends Component {
     this.state = {
       messages: [],
       current_user: {},
+      ui_loadings_get_messages: false,
     };
 
     this.text_input = createRef();
   }
 
-  componentDidUpdate(prevProps) {
+  async componentDidUpdate(prevProps) {
     if (prevProps.current_conver.id !== this.props.current_conver.id) {
       if (this.props.current_conver.id) {
-        getMessages({ user_id: this.props.current_user_id }).then((res) => {
-          this.setState({
-            ...this.state,
-            messages: _.reverse(res.data.data.conversation.messages),
-          });
-        });
-
+        this.setState({ ...this.state, ui_loadings_get_messages: true });
+        await getMessages({ user_id: this.props.current_user_id }).then(
+          (res) => {
+            this.setState({
+              ...this.state,
+              messages: _.reverse(res.data.data.conversation.messages),
+            });
+          }
+        );
+        this.setState({ ...this.state, ui_loadings_get_messages: false });
         this.setCurrentUser();
       }
     }
@@ -130,8 +135,22 @@ class Messages extends Component {
   };
 
   render() {
-    if(!this.state.messages.length){
-      return <div>No Messages!</div>
+    if (this.state.ui_loadings_get_messages) {
+      return (
+        <div className="chat__section chat__section--no-messages">
+          <Loading />
+        </div>
+      );
+    }
+
+    if (!this.state.messages.length) {
+      return (
+        <div className="chat__section chat__section--no-messages">
+          <div className="chat__section__greeting">
+            <h2>HI!</h2>
+          </div>
+        </div>
+      );
     }
 
     return (

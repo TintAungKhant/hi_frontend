@@ -1,5 +1,6 @@
-import React, { Component } from "react";
+import React, { Component, createRef } from "react";
 import _ from "lodash";
+import Loading from "../loadings/loading/Loading";
 import { getFriendsExplore, postAddContact } from "../../api";
 
 class Explore extends Component {
@@ -8,8 +9,19 @@ class Explore extends Component {
 
     this.state = {
       contacts: [],
-      form_gender: 1,
       ui_added_contact_ids: [],
+      ui_loadings_update_contacts: true,
+    };
+
+    this.ref = {
+      inputs: {
+        gender_male: createRef(),
+        gender_female: createRef(),
+        gender_all: createRef(),
+      },
+      buttons: {
+        refresh: createRef(),
+      },
     };
   }
 
@@ -17,28 +29,30 @@ class Explore extends Component {
     this.updateContacts();
   }
 
-  shouldComponentUpdate(nextProp, nextState) {
-    if (this.state.contacts !== nextState.contacts) {
-      return true;
+  updateContacts = async () => {
+    let gender = null;
+    if (this.ref.inputs.gender_male.current.checked) {
+      gender = 1;
+    } else if (this.ref.inputs.gender_female.current.checked) {
+      gender = 2;
     }
-    if (this.state.form_gender !== nextState.form_gender) {
-      return true;
-    }
-    if (this.state.ui_added_contact_ids !== nextState.ui_added_contact_ids) {
-      return true;
-    }
-    return false;
-  }
-
-  updateContacts = () => {
-    getFriendsExplore({ ...this.state.form }).then((res) => {
+    this.updateContactsLoading(true);
+    await getFriendsExplore({ gender }).then((res) => {
       this.setState({ ...this.state, ui_added_contact_ids: [] });
       this.setState({ ...this.state, contacts: res.data.data.contacts });
     });
+    this.updateContactsLoading(false);
   };
 
-  updateGender = (value = null) => {
-    this.setState({ ...this.state, form_gender: value });
+  updateContactsLoading = (loading = false) => {
+    if (loading) {
+      this.setState({ ...this.state, ui_loadings_update_contacts: true });
+      this.ref.buttons.refresh.current.disabled = true;
+      return;
+    }
+    this.setState({ ...this.state, ui_loadings_update_contacts: false });
+    this.ref.buttons.refresh.current.disabled = false;
+    return;
   };
 
   addContact = (id) => {
@@ -52,6 +66,7 @@ class Explore extends Component {
   };
 
   render() {
+    console.log("render");
     return (
       <section className="container py-4">
         <div className="card mb-3">
@@ -70,8 +85,7 @@ class Explore extends Component {
                     id="gender_male"
                     name="gender"
                     value={1}
-                    defaultChecked
-                    onChange={(e) => this.updateGender(e.target.value)}
+                    ref={this.ref.inputs.gender_male}
                   />
                 </div>
                 <div className="mr-2">
@@ -81,7 +95,7 @@ class Explore extends Component {
                     id="gender_female"
                     name="gender"
                     value={2}
-                    onChange={(e) => this.updateGender(e.target.value)}
+                    ref={this.ref.inputs.gender_female}
                   />
                 </div>
                 <div>
@@ -91,47 +105,56 @@ class Explore extends Component {
                     id="gender_all"
                     name="gender"
                     value={3}
-                    onChange={(e) => this.updateGender()}
+                    defaultChecked
+                    ref={this.ref.inputs.gender_all}
                   />
                 </div>
               </div>
             </div>
-            <ul className="list">
-              {this.state.contacts.map((contact) => {
-                return (
-                  <li className="list__item" key={contact.id}>
-                    <div className="list__item__image">
-                      <img
-                        src="https://source.unsplash.com/500x500/?selfie"
-                        alt={contact.name}
-                      />
-                    </div>
-                    <div className="list__item__content">
-                      <div className="list__item__content__title">
-                        {contact.name}
+            {this.state.ui_loadings_update_contacts && (
+              <div className="card__body">
+                <Loading />
+              </div>
+            )}
+            {!this.state.ui_loadings_update_contacts && (
+              <ul className="list">
+                {this.state.contacts.map((contact) => {
+                  return (
+                    <li className="list__item" key={contact.id}>
+                      <div className="list__item__image">
+                        <img
+                          src="https://source.unsplash.com/500x500/?selfie"
+                          alt={contact.name}
+                        />
                       </div>
-                    </div>
-                    <div className="list__item_action">
-                      <button
-                        className="btn btn--light-purple"
-                        disabled={_.includes(
-                          this.state.ui_added_contact_ids,
-                          contact.id
-                        )}
-                        onClick={() => this.addContact(contact.id)}
-                      >
-                        Add
-                      </button>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
+                      <div className="list__item__content">
+                        <div className="list__item__content__title">
+                          {contact.name}
+                        </div>
+                      </div>
+                      <div className="list__item_action">
+                        <button
+                          className="btn btn--light-purple"
+                          disabled={_.includes(
+                            this.state.ui_added_contact_ids,
+                            contact.id
+                          )}
+                          onClick={() => this.addContact(contact.id)}
+                        >
+                          Add
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
           <div className="card__footer">
             <button
               className="btn btn--light-purple"
               onClick={this.updateContacts}
+              ref={this.ref.buttons.refresh}
             >
               Refresh
             </button>

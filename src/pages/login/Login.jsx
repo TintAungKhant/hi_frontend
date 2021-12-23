@@ -13,31 +13,34 @@ export class Login extends Component {
     super();
 
     this.state = {
-      ui: {
-        errors: {
-          login: false,
-          validations: {},
-        },
-      },
+      ui_errors_login: false,
+      ui_errors_validations: {},
     };
 
-    this.emailInput = createRef(null);
-    this.passwordInput = createRef(null);
-
-    this.default_errors = { ...this.state.ui.errors };
+    this.ref = {
+      inputs: {
+        email: createRef(),
+        password: createRef(),
+      },
+      buttons: {
+        login: createRef(),
+      },
+    };
 
     this.setAuthInfo = context.setAuthInfo;
   }
 
   login = () => {
-    let newSate = _.set(this.state, ["ui", "errors"], {
-      ...this.default_errors,
+    this.loginLoading(true);
+
+    this.setState({
+      ui_errors_login: false,
+      ui_errors_validations: {},
     });
-    this.setState(newSate);
 
     postLogin({
-      email: this.emailInput.current.value,
-      password: this.passwordInput.current.value,
+      email: this.ref.inputs.email.current.value,
+      password: this.ref.inputs.password.current.value,
     })
       .then((res) => {
         this.setAuthInfo({
@@ -47,18 +50,36 @@ export class Login extends Component {
       })
       .catch((err) => {
         if (err.response.status === 422) {
-          let newSate = _.set(
-            this.state,
-            ["ui", "errors", "validations"],
-            err.response.data.data.errors
-          );
-          this.setState(newSate);
+          this.setState({
+            ...this.state,
+            ui_errors_validations: err.response.data.data.errors,
+          });
         }
         if (err.response.status === 401) {
-          let newSate = _.set(this.state, ["ui", "errors", "login"], true);
-          this.setState(newSate);
+          this.setState({ ...this.state, ui_errors_login: true });
         }
+        this.loginLoading(false);
       });
+  };
+
+  loginLoading = (loading = false) => {
+    if (loading) {
+      _.each(this.ref.inputs, function (input) {
+        input.current.disabled = true;
+      });
+      this.ref.buttons.login.current.disabled = true;
+
+      return;
+    }
+
+    _.each(this.ref.inputs, function (input) {
+      if (input.current) {
+        input.current.disabled = false;
+      }
+    });
+    this.ref.buttons.login.current.disabled = false;
+
+    return;
   };
 
   render() {
@@ -70,7 +91,7 @@ export class Login extends Component {
           </div>
           <div className="card__body">
             <form className="form">
-              {this.state.ui.errors.login && (
+              {this.state.ui_errors_login && (
                 <FormAlert
                   msg={"Your login credentials are wrong!"}
                   type={"red"}
@@ -82,10 +103,10 @@ export class Login extends Component {
                   type="email"
                   placeholder="Email"
                   id="email"
-                  ref={this.emailInput}
+                  ref={this.ref.inputs.email}
                 />
                 <ValidationError
-                  errors={this.state.ui.errors.validations.email}
+                  errors={this.state.ui_errors_validations.email}
                 />
               </div>
               <div className="form__input text-input">
@@ -94,10 +115,10 @@ export class Login extends Component {
                   type="password"
                   placeholder="Password"
                   id="password"
-                  ref={this.passwordInput}
+                  ref={this.ref.inputs.password}
                 />
                 <ValidationError
-                  errors={this.state.ui.errors.validations.password}
+                  errors={this.state.ui_errors_validations.password}
                 />
               </div>
             </form>
@@ -106,6 +127,7 @@ export class Login extends Component {
             <button
               className="btn btn--light-purple"
               onClick={this.login}
+              ref={this.ref.buttons.login}
             >
               Login
             </button>

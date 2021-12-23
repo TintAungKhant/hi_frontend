@@ -6,6 +6,49 @@ import {
   postDeleteContact,
 } from "../../api";
 import Contact from "../../components/contact/Contact";
+import Loading from "../loadings/loading/Loading";
+import YesNo from "../../components/popups/yes_no/YesNo";
+
+// TODO: need to optimize speed
+
+const ContactSection = React.memo(
+  ({ loading, contacts, title, type, accept, remove }) => {
+    return (
+      <div className="card mb-3">
+        <div className="card__header">
+          <h2>{title}</h2>
+        </div>
+        <div className="card__body">
+          {loading ? (
+            <Loading />
+          ) : (
+            <ul className="list">
+              {!contacts.length ? (
+                <li className="list__item">
+                  <div className="list__item__content">
+                    <div className="list__item__content__title">No data.</div>
+                  </div>
+                </li>
+              ) : (
+                contacts.map((contact) => {
+                  return (
+                    <Contact
+                      type={type}
+                      key={contact.id}
+                      id={contact.id}
+                      accept={accept}
+                      remove={remove}
+                    />
+                  );
+                })
+              )}
+            </ul>
+          )}
+        </div>
+      </div>
+    );
+  }
+);
 
 class Friends extends Component {
   constructor() {
@@ -15,6 +58,12 @@ class Friends extends Component {
       contacts_request: [],
       contacts_online: [],
       contacts_offline: [],
+      ui_popups_remove: false,
+      ui_temp_remove_id: null,
+      ui_temp_remove_type: null,
+      ui_loadings_get_contacts_request: true,
+      ui_loadings_get_contacts_online: true,
+      ui_loadings_get_contacts_offline: true,
     };
   }
 
@@ -24,34 +73,50 @@ class Friends extends Component {
     this.getContacts("offline");
   }
 
-  getContacts = (type) => {
-    apiGetContacts({ type }).then((res) => {
-      switch (type) {
-        case "request":
+  getContacts = async (type) => {
+    switch (type) {
+      case "request":
+        await apiGetContacts({ type }).then((res) => {
           this.setState({
             ...this.state,
             contacts_request: res.data.data.contacts,
           });
-          break;
+        });
+        this.setState({
+          ...this.state,
+          ui_loadings_get_contacts_request: false,
+        });
+        break;
 
-        case "online":
+      case "online":
+        await apiGetContacts({ type }).then((res) => {
           this.setState({
             ...this.state,
             contacts_online: res.data.data.contacts,
           });
-          break;
+        });
+        this.setState({
+          ...this.state,
+          ui_loadings_get_contacts_online: false,
+        });
+        break;
 
-        case "offline":
+      case "offline":
+        await apiGetContacts({ type }).then((res) => {
           this.setState({
             ...this.state,
             contacts_offline: res.data.data.contacts,
           });
-          break;
+        });
+        this.setState({
+          ...this.state,
+          ui_loadings_get_contacts_offline: false,
+        });
+        break;
 
-        default:
-          break;
-      }
-    });
+      default:
+        break;
+    }
     // TODO:: handle error
   };
 
@@ -70,111 +135,98 @@ class Friends extends Component {
     // TODO:: handle error
   };
 
-  remove = (id, type) => {
-    postDeleteContact(id).then(() => {
-      let new_contacts;
-      switch (type) {
-        case "request":
-          new_contacts = _.filter(this.state.contacts_request, (contact) => {
-            return contact.id !== id;
-          });
-          this.setState({ ...this.state, contacts_request: new_contacts });
-          break;
+  showRemoveYesNoPopup = (id, type) => {
+    this.setState({
+      ...this.state,
+      ui_popups_remove: true,
+      ui_temp_remove_id: id,
+      ui_temp_remove_type: type,
+    });
+  };
 
-        case "online":
-          new_contacts = _.filter(this.state.contacts_online, (contact) => {
-            return contact.id !== id;
-          });
-          this.setState({ ...this.state, contacts_online: new_contacts });
-          break;
+  hideRemoveYesNoPopup = () => {
+    this.setState((prevState) => {
+      return {
+        ...prevState,
+        ui_popups_remove: false,
+        ui_temp_remove_id: null,
+        ui_temp_remove_type: null,
+      };
+    });
+  };
 
-        case "offline":
-          new_contacts = _.filter(this.state.contacts_offline, (contact) => {
-            return contact.id !== id;
-          });
-          this.setState({ ...this.state, contacts_offline: new_contacts });
-          break;
+  remove = async (id, type) => {
+    await postDeleteContact(id).then(() => {
+    let new_contacts;
+    switch (type) {
+      case "request":
+        new_contacts = _.filter(this.state.contacts_request, (contact) => {
+          return contact.id !== id;
+        });
+        this.setState({ ...this.state, contacts_request: new_contacts });
+        break;
 
-        default:
-          break;
-      }
+      case "online":
+        new_contacts = _.filter(this.state.contacts_online, (contact) => {
+          return contact.id !== id;
+        });
+        this.setState({ ...this.state, contacts_online: new_contacts });
+        break;
+
+      case "offline":
+        new_contacts = _.filter(this.state.contacts_offline, (contact) => {
+          return contact.id !== id;
+        });
+        this.setState({ ...this.state, contacts_offline: new_contacts });
+        break;
+
+      default:
+        break;
+    }
     });
     // TODO:: handle error
+    this.hideRemoveYesNoPopup();
   };
 
   render() {
     return (
       <section className="container py-4">
-        {this.state.contacts_request.length ? (
-          <div className="card mb-3">
-            <div className="card__header">
-              <h2>Pending</h2>
-            </div>
-            <div className="card__body">
-              <ul className="list">
-                {this.state.contacts_request.map((contact) => {
-                  return (
-                    <Contact
-                      type={"request"}
-                      key={contact.id}
-                      id={contact.id}
-                      accept={this.accept}
-                      remove={this.remove}
-                    />
-                  );
-                })}
-              </ul>
-            </div>
-          </div>
-        ) : (
-          <></>
+        {this.state.ui_popups_remove && (
+          <YesNo
+            title="Remove as friend"
+            message="Are you sure that you want to remove this person from your friend list?"
+            yes={this.remove}
+            yes_params={[
+              this.state.ui_temp_remove_id,
+              this.state.ui_temp_remove_type,
+            ]}
+            no={this.hideRemoveYesNoPopup}
+          />
         )}
-        {this.state.contacts_online.length ? (
-          <div className="card mb-3">
-            <div className="card__header">
-              <h2>Online</h2>
-            </div>
-            <div className="card__body">
-              <ul className="list">
-                {this.state.contacts_online.map((contact) => {
-                  return (
-                    <Contact
-                      type={"online"}
-                      key={contact.id}
-                      id={contact.id}
-                      remove={this.remove}
-                    />
-                  );
-                })}
-              </ul>
-            </div>
-          </div>
-        ) : (
-          <></>
-        )}
-        {this.state.contacts_offline.length ? (
-          <div className="card mb-3">
-            <div className="card__header">
-              <h2>Offline</h2>
-            </div>
-            <div className="card__body">
-              <ul className="list">
-                {this.state.contacts_offline.map((contact) => {
-                  return (
-                    <Contact
-                      type={"offline"}
-                      key={contact.id}
-                      id={contact.id}
-                      remove={this.remove}
-                    />
-                  );
-                })}
-              </ul>
-            </div>
-          </div>
-        ) : (
-          <></>
-        )}
+        <ContactSection
+          contacts={this.state.contacts_request}
+          title="Pending"
+          type="request"
+          loading={this.state.ui_loadings_get_contacts_request}
+          accept={this.accept}
+          remove={this.remove}
+        />
+        <ContactSection
+          contacts={this.state.contacts_online}
+          title="Online"
+          type="online"
+          loading={this.state.ui_loadings_get_contacts_online}
+          accept={this.accept}
+          remove={this.showRemoveYesNoPopup}
+        />
+        <ContactSection
+          contacts={this.state.contacts_offline}
+          title="Offline"
+          type="offline"
+          loading={this.state.ui_loadings_get_contacts_offline}
+          accept={this.accept}
+          remove={this.showRemoveYesNoPopup}
+        />
       </section>
     );
   }

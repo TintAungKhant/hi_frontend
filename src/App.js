@@ -4,6 +4,7 @@ import AuthContext from "./contexts/AuthContext";
 import { getProfile } from "./api";
 import "./App.css";
 import Navbar from "./components/navbar/Navbar";
+import AppStarts from "./pages/loadings/app_starts/AppStarts";
 import {
   Login,
   Register,
@@ -74,7 +75,7 @@ function App() {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <AppStarts/>;
   }
 
   return (

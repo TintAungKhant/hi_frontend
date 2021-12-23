@@ -9,10 +9,10 @@
 }
 /* chat-conversation */
 
-@media screen and (max-width: 768px) {
+/* @media screen and (max-width: 768px) { */
   /* chat-conversation */
-  .chat__section--conversations {
+  /* .chat__section--conversations {
     display: none;
-  }
+  } */
   /* chat-conversation */
-}
+/* } */

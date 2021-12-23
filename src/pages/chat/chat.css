@@ -25,4 +25,17 @@
   max-height: calc(100vh - (60px + 75px + 0.75rem));
   overflow-y: auto;
 }
+
+.chat__section--no-messages {
+  width: 100%;
+  height: calc(100vh - 60px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.chat__section__greeting {
+  color: var(--gray);
+  font-size: 2.5rem;
+}
 /* chat */

@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, createRef } from "react";
 import _ from "lodash";
 import AuthContext from "../../contexts/AuthContext";
 import ValidationError from "../../components/validation_error/ValidationError";
@@ -13,31 +13,42 @@ export class Register extends Component {
     super();
 
     this.state = {
-      form: {
-        name: null,
-        gender: 1,
-        birthday: null,
-        email: null,
-        password: null,
-        password_confirmation: null,
+      ui_errors_validations: {},
+    };
+
+    this.ref = {
+      inputs: {
+        name: createRef(),
+        gender_male: createRef(),
+        gender_female: createRef(),
+        birthday: createRef(),
+        email: createRef(),
+        password: createRef(),
+        password_confirmation: createRef(),
       },
-      ui: {
-        errors: {
-          validations: {},
-        },
+      buttons: {
+        register: createRef(),
       },
     };
 
     this.setAuthInfo = context.setAuthInfo;
   }
 
-  updateInput = (key, value) => {
-    let newSate = _.set(this.state, ["form", key], value);
-    this.setState(newSate);
-  };
-
   register = () => {
-    postRegister(this.state.form)
+    this.registerLoading(true);
+
+    this.setState({ ui_errors_validations: {} });
+
+    let form = {
+      name: this.ref.inputs.name.current.value,
+      gender: this.ref.inputs.gender_male.current.checked ? 1 : 2,
+      birthday: this.ref.inputs.birthday.current.value,
+      email: this.ref.inputs.email.current.value,
+      password: this.ref.inputs.password.current.value,
+      password_confirmation:
+        this.ref.inputs.password_confirmation.current.value,
+    };
+    postRegister(form)
       .then((res) => {
         this.setAuthInfo({
           auth: true,
@@ -46,14 +57,30 @@ export class Register extends Component {
       })
       .catch((err) => {
         if (err.response.status === 422) {
-          let newSate = _.set(
-            this.state,
-            ["ui", "errors", "validations"],
-            err.response.data.data.errors
-          );
-          this.setState(newSate);
+          this.setState({
+            ui_errors_validations: err.response.data.data.errors,
+          });
         }
+        this.registerLoading(false);
       });
+  };
+
+  registerLoading = (loading = false) => {
+    if (loading) {
+      _.each(this.ref.inputs, function (input) {
+        input.current.disabled = true;
+      });
+      this.ref.buttons.register.current.disabled = true;
+
+      return;
+    }
+
+    _.each(this.ref.inputs, function (input) {
+      input.current.disabled = false;
+    });
+    this.ref.buttons.register.current.disabled = false;
+
+    return;
   };
 
   render() {
@@ -71,10 +98,10 @@ export class Register extends Component {
                   type="text"
                   placeholder="Name"
                   id="name"
-                  onChange={(e) => this.updateInput("name", e.target.value)}
+                  ref={this.ref.inputs.name}
                 />
                 <ValidationError
-                  errors={this.state.ui.errors.validations.name}
+                  errors={this.state.ui_errors_validations.name}
                 />
               </div>
               <div className="form__input text-input">
@@ -83,10 +110,10 @@ export class Register extends Component {
                   type="date"
                   placeholder="Birthday"
                   id="birthday"
-                  onChange={(e) => this.updateInput("birthday", e.target.value)}
+                  ref={this.ref.inputs.birthday}
                 />
                 <ValidationError
-                  errors={this.state.ui.errors.validations.birthday}
+                  errors={this.state.ui_errors_validations.birthday}
                 />
               </div>
               <div className="form__input text-input">
@@ -95,10 +122,10 @@ export class Register extends Component {
                   type="email"
                   placeholder="Email"
                   id="email"
-                  onChange={(e) => this.updateInput("email", e.target.value)}
+                  ref={this.ref.inputs.email}
                 />
                 <ValidationError
-                  errors={this.state.ui.errors.validations.email}
+                  errors={this.state.ui_errors_validations.email}
                 />
               </div>
               <div className="form__input--group">
@@ -113,9 +140,7 @@ export class Register extends Component {
                         name="gender"
                         value="1"
                         defaultChecked
-                        onChange={(e) =>
-                          this.updateInput("gender", e.target.value)
-                        }
+                        ref={this.ref.inputs.gender_male}
                       />
                     </div>
                     <div>
@@ -125,15 +150,13 @@ export class Register extends Component {
                         id="gender_female"
                         name="gender"
                         value="2"
-                        onChange={(e) =>
-                          this.updateInput("gender", e.target.value)
-                        }
+                        ref={this.ref.inputs.gender_female}
                       />
                     </div>
                   </div>
                 </div>
                 <ValidationError
-                  errors={this.state.ui.errors.validations.gender}
+                  errors={this.state.ui_errors_validations.gender}
                 />
               </div>
               <div className="form__input text-input">
@@ -142,10 +165,10 @@ export class Register extends Component {
                   type="password"
                   placeholder="Password"
                   id="password"
-                  onChange={(e) => this.updateInput("password", e.target.value)}
+                  ref={this.ref.inputs.password}
                 />
                 <ValidationError
-                  errors={this.state.ui.errors.validations.password}
+                  errors={this.state.ui_errors_validations.password}
                 />
               </div>
               <div className="form__input text-input">
@@ -154,15 +177,17 @@ export class Register extends Component {
                   type="password"
                   placeholder="Confirm Password"
                   id="password_confirmation"
-                  onChange={(e) =>
-                    this.updateInput("password_confirmation", e.target.value)
-                  }
+                  ref={this.ref.inputs.password_confirmation}
                 />
               </div>
             </form>
           </div>
           <div className="card__footer">
-            <button className="btn btn--light-purple" onClick={this.register}>
+            <button
+              className="btn btn--light-purple"
+              onClick={this.register}
+              ref={this.ref.buttons.register}
+            >
               Register
             </button>
           </div>
