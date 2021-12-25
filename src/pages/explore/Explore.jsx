@@ -59,7 +59,7 @@ class Explore extends Component {
     postAddContact(id).then(() => {
       this.setState({
         ...this.state,
-        ui_added_contact_ids: _.concat(this.state.ui_added_contact_ids, id),
+        ui_added_contact_ids: [...this.state.ui_added_contact_ids, id],
       });
     });
     // TODO:: handle error

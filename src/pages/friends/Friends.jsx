@@ -35,7 +35,7 @@ const ContactSection = React.memo(
                     <Contact
                       type={type}
                       key={contact.id}
-                      id={contact.id}
+                      contact={contact}
                       accept={accept}
                       remove={remove}
                     />
