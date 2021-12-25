@@ -88,6 +88,10 @@ const postBroadcastingAuth = (data) => {
   return http.post("/broadcasting/auth", data);
 }
 
+const postProfile = (data) => {
+  return http.post("/profile", data);
+}
+
 export {
   postRegister,
   postLogin,
@@ -102,5 +106,6 @@ export {
   getConversation,
   getMessages,
   postMessages,
-  postBroadcastingAuth
+  postBroadcastingAuth,
+  postProfile
 };

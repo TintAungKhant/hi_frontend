@@ -1,0 +1,51 @@
+change to flat state
+check rerenders
+update radio button values
+
+should use flat data for sate
+should check the rerender problems on every components
+must use hooks efficiently
+
+React.memo = PureComponent (can store every values, cant set trigger when values, mostly outside component)
+useMemo = componentShouldRender (can store every values, can set trigger when values, must inside component)
+
+React.memo != useMemo
+
+rerender issue with normal components
+when parent component's state changes, children will be rerendered
+u can prevent it by memorizing each child component that u dont want to rerender
+
+rerender issue with context
+when parent component's sate changes, consumers will be rerendered. regardless of memo or not, every related or unrelated stage changes will effect consumers because the parent component is rerendered again every changes. when a component is rerendered, every variables are new even they still remain same values. those values are parsed to provider's value and it will be assume as new value. so the consumers are rerendered. (please assume we are parsing count as object. not single value. if it's sing value, there's no problem. if it's a object, when object is recreated, even if the attributes are same, the object reference wont be same. pleas note that)
+<TestProvider value={{count}}></TestProvider>
+count will be new count when component is rerendered. even if value is same, the old variable count is gone. 
+to prevent it, u can parse memorized value to provider
+<TestProvider value={useMemo()=>{}}></TestProvider>
+now count is in the memory and it will check is the value same or not instead of checking the count is old variable count and same value. since it's just checking the value, if old count and new count are same, the value of provider doesn't change. so the consumer won't be rerendered again
+
+notice about the naming in react.
+withRouter -> u can use hooks
+function withRouterTest(Child) {
+  return (props) => {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const params = useParams();
+    return (
+      <Child
+        {...props}
+        navigate={navigate}
+        location={location}
+        params={params}
+      />
+    );
+  };
+}
+WithRouter -> u cant use hooks
+
+if subsequence state updates are not working try this
+setState(prevState => {
+  return {
+    ...prevState,
+    bar: 456
+  };
+});
