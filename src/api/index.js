@@ -60,8 +60,10 @@ const getContacts = (params) => {
   });
 }
 
-const getConversations = (id) => {
-  return http.get(`/conversations`);
+const getConversations = (params) => {
+  return http.get(`/conversations`, {
+    params
+  });
 }
 
 const getConversation = (params) => {
@@ -82,6 +84,10 @@ const postMessages = (params, data) => {
   });
 }
 
+const postBroadcastingAuth = (data) => {
+  return http.post("/broadcasting/auth", data);
+}
+
 export {
   postRegister,
   postLogin,
@@ -95,5 +101,6 @@ export {
   getConversations,
   getConversation,
   getMessages,
-  postMessages
+  postMessages,
+  postBroadcastingAuth
 };

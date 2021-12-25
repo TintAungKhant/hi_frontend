@@ -30,6 +30,7 @@
 
 .message--left .message__contents {
   align-items: flex-start;
+  width: 100%;
 }
 
 .message--right .message__contents {

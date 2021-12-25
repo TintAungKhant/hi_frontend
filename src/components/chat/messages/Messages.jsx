@@ -7,6 +7,7 @@ import AuthContext from "../../../contexts/AuthContext";
 import "./messages.css";
 import Message from "../message/Message";
 import Loading from "../../../pages/loadings/loading/Loading";
+import axios from "axios";
 
 const hoc = (Child) => {
   return (props) => {
@@ -35,19 +36,27 @@ const hoc = (Child) => {
 };
 
 class Messages extends Component {
-  constructor(props, context) {
+  constructor({}, context) {
     super();
 
     this.state = {
       messages: [],
       current_user: {},
+      ui_once_no_more_messages: false,
       ui_loadings_get_messages: false,
+      ui_loadings_get_more_messages: false,
     };
 
-    this.text_input = createRef();
+    this.ref = {
+      inputs: {
+        text_message: createRef(),
+      },
+    };
   }
 
   async componentDidUpdate(prevProps) {
+    this.messages_block = document.querySelector("#messages-block");
+
     if (prevProps.current_conver.id !== this.props.current_conver.id) {
       if (this.props.current_conver.id) {
         this.setState({ ...this.state, ui_loadings_get_messages: true });
@@ -59,8 +68,14 @@ class Messages extends Component {
             });
           }
         );
-        this.setState({ ...this.state, ui_loadings_get_messages: false });
+        this.setState({
+          ...this.state,
+          ui_once_no_more_messages: false,
+          ui_loadings_get_messages: false,
+        });
         this.setCurrentUser();
+        this.leaveSocket();
+        this.listenSocket();
       }
     }
   }
@@ -119,12 +134,19 @@ class Messages extends Component {
   };
 
   sendMessage = () => {
+    let text = this.ref.inputs.text_message.current.value;
+    this.ref.inputs.text_message.current.value = "";
+    this.ref.inputs.text_message.current.focus();
     postMessages(
       { user_id: this.props.current_user_id },
-      { text: this.text_input.current.value, type: "text" }
-    ).then((res) => {
-      console.log(res.data);
-    });
+      { text, type: "text" }
+    );
+  };
+
+  checkEnterAndSend = (e) => {
+    if (e.keyCode === 13) {
+      this.sendMessage();
+    }
   };
 
   onlineStatusBlock = () => {
@@ -132,6 +154,62 @@ class Messages extends Component {
       return <span className="online-badge">Online</span>;
     }
     return <span className="offline-badge">Offline</span>;
+  };
+
+  listenSocket = () => {
+    this.props.socket
+      .private(`api.v1.message-sent.${this.props.current_conver.id}`)
+      .listen(".message-sent", (res) => {
+        if (res.message) {
+          this.setState(
+            {
+              ...this.state,
+              messages: [...this.state.messages, res.message],
+            },
+            () => {
+              this.messages_block.scrollTop = this.messages_block.scrollHeight;
+            }
+          );
+        }
+      });
+  };
+
+  leaveSocket = () => {
+    this.props.socket.leave(
+      `api.v1.message-sent.${this.props.current_conver.id}`
+    );
+  };
+
+  getMoreMessages = () => {
+    if (
+      !this.state.ui_once_no_more_messages &&
+      !this.state.ui_loadings_get_more_messages &&
+      this.messages_block.scrollTop === 0
+    ) {
+      this.setState({ ...this.state, ui_loadings_get_more_messages: true });
+
+      getMessages({
+        user_id: this.props.current_user_id,
+        last_message_id: this.state.messages[0].id,
+      }).then((res) => {
+        if (res.data.data.conversation.messages.length) {
+          this.setState({
+            ...this.state,
+            messages: [
+              ..._.reverse(res.data.data.conversation.messages),
+              ...this.state.messages,
+            ],
+            ui_loadings_get_more_messages: false,
+          });
+        } else {
+          this.setState({
+            ...this.state,
+            ui_once_no_more_messages: true,
+            ui_loadings_get_more_messages: false,
+          });
+        }
+      });
+    }
   };
 
   render() {
@@ -143,7 +221,7 @@ class Messages extends Component {
       );
     }
 
-    if (!this.state.messages.length) {
+    if (!this.state.messages.length && !this.props.current_user_id) {
       return (
         <div className="chat__section chat__section--no-messages">
           <div className="chat__section__greeting">
@@ -174,7 +252,11 @@ class Messages extends Component {
           </div>
         </div>
         <div className="chat__section__content">
-          <div className="messages">
+          <div
+            className="messages"
+            id="messages-block"
+            onScroll={this.getMoreMessages}
+          >
             {this.arrangeMessages(this.state.messages).map(
               (message_item, index) => {
                 return (
@@ -198,7 +280,10 @@ class Messages extends Component {
                 <input
                   type="text"
                   placeholder="Say something ..."
-                  ref={this.text_input}
+                  ref={this.ref.inputs.text_message}
+                  onKeyUp={(e) => {
+                    this.checkEnterAndSend(e);
+                  }}
                 />
               </div>
             </div>

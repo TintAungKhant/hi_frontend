@@ -5,13 +5,14 @@ import ChatContext from "../../contexts/ChatContext";
 import { getConversation } from "../../api";
 import Conversations from "../../components/chat/conversations/Conversations";
 import Messages from "../../components/chat/messages/Messages";
+import socket from "../../socket";
 
 const MemoConversations = React.memo(() => {
-  return <Conversations />;
+  return <Conversations socket={socket}/>;
 });
 
 const MemoMessages = React.memo(() => {
-  return <Messages />;
+  return <Messages socket={socket}/>;
 });
 
 function Chat() {
