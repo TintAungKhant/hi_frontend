@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router";
 
 const Content = ({ contact, type, accept, remove }) => {
@@ -11,8 +11,18 @@ const Content = ({ contact, type, accept, remove }) => {
           <div className="list__item__content__title">{contact.name}</div>
         </div>
         <div className="list__item_action">
-          <button className="btn btn--light-purple" onClick={() => accept(contact.id)}>Accept</button>
-          <button className="btn btn--light-red" onClick={() => remove(contact.id, type)}>Reject</button>
+          <button
+            className="btn btn--light-purple"
+            onClick={() => accept(contact.id)}
+          >
+            Accept
+          </button>
+          <button
+            className="btn btn--light-red"
+            onClick={() => remove(contact.id, type)}
+          >
+            Reject
+          </button>
         </div>
       </>
     );
@@ -26,8 +36,18 @@ const Content = ({ contact, type, accept, remove }) => {
           </div>
         </div>
         <div className="list__item_action">
-          <button className="btn btn--light-purple" onClick={() => navigate(`/chat/user/${contact.id}`)}>Message</button>
-          <button className="btn btn--light-red" onClick={() => remove(contact.id, type)}>Unfriend</button>
+          <button
+            className="btn btn--light-purple"
+            onClick={() => navigate(`/chat/user/${contact.id}`)}
+          >
+            Message
+          </button>
+          <button
+            className="btn btn--light-red"
+            onClick={() => remove(contact.id, type)}
+          >
+            Unfriend
+          </button>
         </div>
       </>
     );
@@ -41,8 +61,18 @@ const Content = ({ contact, type, accept, remove }) => {
           </div>
         </div>
         <div className="list__item_action">
-          <button className="btn btn--light-purple" onClick={() => navigate(`/chat/user/${contact.id}`)}>Message</button>
-          <button className="btn btn--light-red" onClick={() => remove(contact.id, type)}>Unfriend</button>
+          <button
+            className="btn btn--light-purple"
+            onClick={() => navigate(`/chat/user/${contact.id}`)}
+          >
+            Message
+          </button>
+          <button
+            className="btn btn--light-red"
+            onClick={() => remove(contact.id, type)}
+          >
+            Unfriend
+          </button>
         </div>
       </>
     );
@@ -54,9 +84,12 @@ function Contact({ contact, type, accept, remove }) {
   return (
     <li className="list__item">
       <div className="list__item__image">
-        <img src="https://source.unsplash.com/500x500/?selfie" alt={contact.name} />
+        <img
+          src="https://source.unsplash.com/500x500/?selfie"
+          alt={contact.name}
+        />
       </div>
-      <Content contact={contact} type={type} accept={accept} remove={remove}/>
+      <Content contact={contact} type={type} accept={accept} remove={remove} />
     </li>
   );
 }

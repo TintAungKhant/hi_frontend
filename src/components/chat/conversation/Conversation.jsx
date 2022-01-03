@@ -15,6 +15,27 @@ function Conversation({ conversation, auth_user_id, current_user_id }) {
     );
   }, []);
 
+  const messageContent = (conversation) => {
+    if (conversation.latest_message.type === "text") {
+      if (conversation.latest_message.user_id == auth_user_id) {
+        return <div>You: {conversation.latest_message.messageable.text}</div>;
+      }
+      return <div>{conversation.latest_message.messageable.text}</div>;
+    }
+    if (conversation.latest_message.user_id == auth_user_id) {
+      return (
+        <div>
+          You: Sent an image&nbsp;<i className="fas fa-image"></i>
+        </div>
+      );
+    }
+    return (
+      <div>
+        Sent an image&nbsp;<i className="fas fa-image"></i>
+      </div>
+    );
+  };
+
   return (
     <li
       className={`list__item ${current_user_id == user.id ? "active" : ""}`}
@@ -37,7 +58,7 @@ function Conversation({ conversation, auth_user_id, current_user_id }) {
           </div>
         </div>
         <div className="list__item__content__text text-truncate">
-          {conversation.latest_message.messageable.text}
+          {messageContent(conversation)}
         </div>
       </div>
     </li>

@@ -66,7 +66,6 @@ class Explore extends Component {
   };
 
   render() {
-    console.log("render");
     return (
       <section className="container py-4">
         <div className="card mb-3">

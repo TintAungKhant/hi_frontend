@@ -1,0 +1,17 @@
+@import url("../popup.css");
+
+.popup__image-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.popup__image-container img {
+  max-width: 90%;
+  max-height: 600px;
+}
+
+.popup-action {
+  display: flex;
+  justify-content: center;
+}

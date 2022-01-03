@@ -33,8 +33,6 @@ export class MyProfileEdit extends Component {
     };
 
     this.setAuthInfo = context.setAuthInfo;
-
-    console.log(context.authInfo.user);
   }
 
   update = () => {

@@ -1,16 +1,13 @@
 @import url("../popup.css");
 
-.popup--yes-no {
+.popup--alert {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.popup__title h2 {
-  font-size: 1.6rem;
-}
-
 .popup-action {
   display: flex;
+  justify-content: center;
   gap: 1rem;
 }

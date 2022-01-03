@@ -1,6 +1,5 @@
 /* chat-conversation */
 .chat__section--conversations {
-  max-width: 340px;
   border-right: 1px solid var(--gray);
 }
 

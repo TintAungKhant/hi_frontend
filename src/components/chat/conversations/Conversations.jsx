@@ -97,7 +97,8 @@ class Conversations extends Component {
       });
 
       getConversations({
-        last_conversation_id: this.state.conversations[this.state.conversations.length - 1].id,
+        last_conversation_id:
+          this.state.conversations[this.state.conversations.length - 1].id,
       }).then((res) => {
         if (res.data.data.conversations.length) {
           this.setState({
@@ -119,9 +120,30 @@ class Conversations extends Component {
     }
   };
 
+  calcStyle = () => {
+    if (window.screen.width <= 768) {
+      if (this.props.current_user_id) {
+        return {
+          display: "none",
+        };
+      } else {
+        return {
+          display: "block",
+          width: "100%",
+        };
+      }
+    }
+    return {
+      maxWidth: "340px",
+    };
+  };
+
   render() {
     return (
-      <div className="chat__section chat__section--conversations">
+      <div
+        className="chat__section chat__section--conversations"
+        style={this.calcStyle()}
+      >
         <div className="chat__section__header">
           <div className="text-input">
             <input type="text" placeholder="Search in messages" />

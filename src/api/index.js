@@ -78,9 +78,10 @@ const getMessages = (params) => {
   });
 }
 
-const postMessages = (params, data) => {
+const postMessages = (data, params, headers = {}) => {
   return http.post("/conversations/messages", data, {
-    params
+    params,
+    ...headers
   });
 }
 

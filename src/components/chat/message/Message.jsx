@@ -1,5 +1,40 @@
-import React from "react";
+import React, { useState } from "react";
 import "./message.css";
+import Image from "../../popups/image/Image";
+
+const MessageContent = ({ message }) => {
+  const [showImagePopup, setShowImagePopup] = useState(false);
+
+  if (message.type === "text") {
+    return <div>{message.text}</div>;
+  }
+
+  const calcStyle = () => {
+    let style = {
+      width: "300px",
+      height: "300px",
+      objectFit: "cover",
+      cursor: "pointer",
+    };
+    if (window.screen.width <= 768) {
+      return { ...style, width: "200px", height: "200px" };
+    }
+    return style;
+  };
+
+  return (
+    <div>
+      {showImagePopup && (
+        <Image url={message.url} close={() => setShowImagePopup(false)} />
+      )}
+      <img
+        src={message.url}
+        style={calcStyle()}
+        onClick={() => setShowImagePopup(true)}
+      />
+    </div>
+  );
+};
 
 const MessageLeft = function ({ messages }) {
   return (
@@ -12,7 +47,7 @@ const MessageLeft = function ({ messages }) {
           {messages.map((message, index) => {
             return (
               <div className="message__content" key={index}>
-                {message.text}
+                <MessageContent message={message} />
               </div>
             );
           })}
@@ -30,7 +65,7 @@ const MessageRight = function ({ messages }) {
           {messages.map((message, index) => {
             return (
               <div className="message__content" key={index}>
-                {message.text}
+                <MessageContent message={message} />
               </div>
             );
           })}

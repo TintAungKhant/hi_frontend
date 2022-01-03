@@ -12,7 +12,7 @@ function YesNo({ title, message, yes, yes_params, no, no_params }) {
         )}
         {message && <div className="popup__body">{message}</div>}
 
-        <div className="popup_action">
+        <div className="popup-action">
           <button
             className="btn btn--purple"
             onClick={() => {

@@ -157,32 +157,32 @@ class Friends extends Component {
 
   remove = async (id, type) => {
     await postDeleteContact(id).then(() => {
-    let new_contacts;
-    switch (type) {
-      case "request":
-        new_contacts = _.filter(this.state.contacts_request, (contact) => {
-          return contact.id !== id;
-        });
-        this.setState({ ...this.state, contacts_request: new_contacts });
-        break;
+      let new_contacts;
+      switch (type) {
+        case "request":
+          new_contacts = _.filter(this.state.contacts_request, (contact) => {
+            return contact.id !== id;
+          });
+          this.setState({ ...this.state, contacts_request: new_contacts });
+          break;
 
-      case "online":
-        new_contacts = _.filter(this.state.contacts_online, (contact) => {
-          return contact.id !== id;
-        });
-        this.setState({ ...this.state, contacts_online: new_contacts });
-        break;
+        case "online":
+          new_contacts = _.filter(this.state.contacts_online, (contact) => {
+            return contact.id !== id;
+          });
+          this.setState({ ...this.state, contacts_online: new_contacts });
+          break;
 
-      case "offline":
-        new_contacts = _.filter(this.state.contacts_offline, (contact) => {
-          return contact.id !== id;
-        });
-        this.setState({ ...this.state, contacts_offline: new_contacts });
-        break;
+        case "offline":
+          new_contacts = _.filter(this.state.contacts_offline, (contact) => {
+            return contact.id !== id;
+          });
+          this.setState({ ...this.state, contacts_offline: new_contacts });
+          break;
 
-      default:
-        break;
-    }
+        default:
+          break;
+      }
     });
     // TODO:: handle error
     this.hideRemoveYesNoPopup();
@@ -190,7 +190,8 @@ class Friends extends Component {
 
   render() {
     return (
-      <section className="container py-4">
+      <>
+      {/* TODO: adjust popup show code */}
         {this.state.ui_popups_remove && (
           <YesNo
             title="Remove as friend"
@@ -203,31 +204,33 @@ class Friends extends Component {
             no={this.hideRemoveYesNoPopup}
           />
         )}
-        <ContactSection
-          contacts={this.state.contacts_request}
-          title="Pending"
-          type="request"
-          loading={this.state.ui_loadings_get_contacts_request}
-          accept={this.accept}
-          remove={this.remove}
-        />
-        <ContactSection
-          contacts={this.state.contacts_online}
-          title="Online"
-          type="online"
-          loading={this.state.ui_loadings_get_contacts_online}
-          accept={this.accept}
-          remove={this.showRemoveYesNoPopup}
-        />
-        <ContactSection
-          contacts={this.state.contacts_offline}
-          title="Offline"
-          type="offline"
-          loading={this.state.ui_loadings_get_contacts_offline}
-          accept={this.accept}
-          remove={this.showRemoveYesNoPopup}
-        />
-      </section>
+        <section className="container py-4">
+          <ContactSection
+            contacts={this.state.contacts_request}
+            title="Pending"
+            type="request"
+            loading={this.state.ui_loadings_get_contacts_request}
+            accept={this.accept}
+            remove={this.remove}
+          />
+          <ContactSection
+            contacts={this.state.contacts_online}
+            title="Online"
+            type="online"
+            loading={this.state.ui_loadings_get_contacts_online}
+            accept={this.accept}
+            remove={this.showRemoveYesNoPopup}
+          />
+          <ContactSection
+            contacts={this.state.contacts_offline}
+            title="Offline"
+            type="offline"
+            loading={this.state.ui_loadings_get_contacts_offline}
+            accept={this.accept}
+            remove={this.showRemoveYesNoPopup}
+          />
+        </section>
+      </>
     );
   }
 }

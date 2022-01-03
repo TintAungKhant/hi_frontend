@@ -1,4 +1,4 @@
-import React, { Component, createRef } from "react";
+import React, { Component, createRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import _ from "lodash";
 import { getMessages, postMessages } from "../../../api";
@@ -7,7 +7,7 @@ import AuthContext from "../../../contexts/AuthContext";
 import "./messages.css";
 import Message from "../message/Message";
 import Loading from "../../../pages/loadings/loading/Loading";
-import axios from "axios";
+import Alert from "../../popups/alert/Alert";
 
 const hoc = (Child) => {
   return (props) => {
@@ -35,8 +35,92 @@ const hoc = (Child) => {
   };
 };
 
+const MessageSender = React.memo(({ current_user_id }) => {
+  const [imageErrors, setImageErrors] = useState([]);
+
+  const textInput = createRef();
+  const imageInput = createRef();
+
+  const sendMessage = (type) => {
+    setImageErrors([]);
+    if (type === "image") {
+      let form = new FormData();
+      form.append("image", imageInput.current.files[0]);
+      form.append("type", type);
+      postMessages(
+        form,
+        { user_id: current_user_id },
+        {
+          "Content-Type": "multipart/form-data",
+        }
+      ).catch((err) => {
+        if (err.response.status === 422) {
+          if (err.response.data.data.errors.image) {
+            setImageErrors(err.response.data.data.errors.image);
+          }
+        }
+      });
+    } else {
+      if (textInput.current.value) {
+        let form = {
+          text: textInput.current.value,
+          type,
+        };
+        textInput.current.value = "";
+        textInput.current.focus();
+        postMessages(form, { user_id: current_user_id });
+      }
+    }
+  };
+
+  return (
+    <>
+      {imageErrors[0] && (
+        <Alert message={imageErrors[0]} ok={() => setImageErrors([])} />
+      )}
+      <div className="message-sender">
+        <div className="message-sender__attachment">
+          <input
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            id="file-input"
+            ref={imageInput}
+            onChange={() => sendMessage("image")}
+          />
+          <button onClick={() => document.querySelector("#file-input").click()}>
+            <i className="fas fa-image"></i>
+          </button>
+        </div>
+        <div className="message-sender__text">
+          <div className="text-input">
+            <input
+              type="text"
+              placeholder="Say something ..."
+              ref={textInput}
+              onKeyUp={(e) => {
+                if (e.keyCode === 13) {
+                  sendMessage("text");
+                }
+              }}
+            />
+          </div>
+        </div>
+        <div className="message-sender__send">
+          <button
+            className="btn btn--light-purple"
+            onClick={() => sendMessage("text")}
+          >
+            <i className="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </>
+  );
+});
+
 class Messages extends Component {
-  constructor({}, context) {
+  constructor() {
     super();
 
     this.state = {
@@ -50,6 +134,7 @@ class Messages extends Component {
     this.ref = {
       inputs: {
         text_message: createRef(),
+        image_message: createRef(),
       },
     };
   }
@@ -74,7 +159,7 @@ class Messages extends Component {
           ui_loadings_get_messages: false,
         });
         this.setCurrentUser();
-        this.leaveSocket();
+        this.leaveSocket(prevProps.current_conver.id);
         this.listenSocket();
       }
     }
@@ -110,6 +195,7 @@ class Messages extends Component {
             messages: [],
           };
         }
+        message.messageable.type = message.type;
         new_message.messages.push(message.messageable);
       } else {
         if (new_message.user_id) {
@@ -124,6 +210,7 @@ class Messages extends Component {
           name: user.name,
           messages: [],
         };
+        message.messageable.type = message.type;
         new_message.messages.push(message.messageable);
       }
       if (index + 1 === messages.length) {
@@ -131,22 +218,6 @@ class Messages extends Component {
       }
     });
     return new_messages;
-  };
-
-  sendMessage = () => {
-    let text = this.ref.inputs.text_message.current.value;
-    this.ref.inputs.text_message.current.value = "";
-    this.ref.inputs.text_message.current.focus();
-    postMessages(
-      { user_id: this.props.current_user_id },
-      { text, type: "text" }
-    );
-  };
-
-  checkEnterAndSend = (e) => {
-    if (e.keyCode === 13) {
-      this.sendMessage();
-    }
   };
 
   onlineStatusBlock = () => {
@@ -160,7 +231,10 @@ class Messages extends Component {
     this.props.socket
       .private(`api.v1.message-sent.${this.props.current_conver.id}`)
       .listen(".message-sent", (res) => {
-        if (res.message) {
+        if (
+          res.message &&
+          res.message.conversation_id == this.props.current_conver.id
+        ) {
           this.setState(
             {
               ...this.state,
@@ -174,10 +248,11 @@ class Messages extends Component {
       });
   };
 
-  leaveSocket = () => {
-    this.props.socket.leave(
-      `api.v1.message-sent.${this.props.current_conver.id}`
-    );
+  leaveSocket = (conversation_id = null) => {
+    conversation_id = conversation_id
+      ? conversation_id
+      : this.props.current_conver.id;
+    this.props.socket.leave(`api.v1.message-sent.${conversation_id}`);
   };
 
   getMoreMessages = () => {
@@ -212,10 +287,25 @@ class Messages extends Component {
     }
   };
 
+  calcStyle = () => {
+    if (window.screen.width <= 768) {
+      if (this.props.current_user_id) {
+        return {
+          display: "block",
+          width: "100%",
+        };
+      } else {
+        return {
+          display: "none",
+        };
+      }
+    }
+  };
+
   render() {
     if (this.state.ui_loadings_get_messages) {
       return (
-        <div className="chat__section chat__section--no-messages">
+        <div className="chat__section chat__section--no-messages" style={this.calcStyle()}>
           <Loading />
         </div>
       );
@@ -223,7 +313,7 @@ class Messages extends Component {
 
     if (!this.state.messages.length && !this.props.current_user_id) {
       return (
-        <div className="chat__section chat__section--no-messages">
+        <div className="chat__section chat__section--no-messages" style={this.calcStyle()}>
           <div className="chat__section__greeting">
             <h2>HI!</h2>
           </div>
@@ -232,7 +322,7 @@ class Messages extends Component {
     }
 
     return (
-      <div className="chat__section chat__section--messages">
+      <div className="chat__section chat__section--messages" style={this.calcStyle()}>
         <div className="chat__section__header">
           <div className="list__item">
             <div className="list__item__image">
@@ -269,33 +359,7 @@ class Messages extends Component {
               }
             )}
           </div>
-          <div className="message-sender">
-            <div className="message-sender__attachment">
-              <button>
-                <i className="fas fa-paperclip"></i>
-              </button>
-            </div>
-            <div className="message-sender__text">
-              <div className="text-input">
-                <input
-                  type="text"
-                  placeholder="Say something ..."
-                  ref={this.ref.inputs.text_message}
-                  onKeyUp={(e) => {
-                    this.checkEnterAndSend(e);
-                  }}
-                />
-              </div>
-            </div>
-            <div className="message-sender__send">
-              <button
-                className="btn btn--light-purple"
-                onClick={this.sendMessage}
-              >
-                <i className="fas fa-paper-plane"></i>
-              </button>
-            </div>
-          </div>
+          <MessageSender current_user_id={this.props.current_user_id} />
         </div>
       </div>
     );
