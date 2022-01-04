@@ -1,14 +1,15 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router";
+import React from "react";
+import { Link } from "react-router-dom";
+import EmptyUserImage from "../../assets/empty_user_image.png";
 
 const Content = ({ contact, type, accept, remove }) => {
-  const navigate = useNavigate();
-
   if (type === "request") {
     return (
       <>
         <div className="list__item__content">
-          <div className="list__item__content__title">{contact.name}</div>
+          <div className="list__item__content__title">
+            <Link to={`/profile/${contact.id}`}>{contact.name}</Link>
+          </div>
         </div>
         <div className="list__item_action">
           <button
@@ -30,18 +31,20 @@ const Content = ({ contact, type, accept, remove }) => {
     return (
       <>
         <div className="list__item__content">
-          <div className="list__item__content__title">{contact.name}</div>
+          <div className="list__item__content__title">
+            <Link to={`/profile/${contact.id}`}>{contact.name}</Link>
+          </div>
           <div className="list__item__content__text">
             <span className="online-badge">Online</span>
           </div>
         </div>
         <div className="list__item_action">
-          <button
+          <Link
+            to={`/chat/user/${contact.id}`}
             className="btn btn--light-purple"
-            onClick={() => navigate(`/chat/user/${contact.id}`)}
           >
             Message
-          </button>
+          </Link>
           <button
             className="btn btn--light-red"
             onClick={() => remove(contact.id, type)}
@@ -55,18 +58,20 @@ const Content = ({ contact, type, accept, remove }) => {
     return (
       <>
         <div className="list__item__content">
-          <div className="list__item__content__title">{contact.name}</div>
+          <div className="list__item__content__title">
+            <Link to={`/profile/${contact.id}`}>{contact.name}</Link>
+          </div>
           <div className="list__item__content__text">
             <span className="offline-badge">Offline</span>
           </div>
         </div>
         <div className="list__item_action">
-          <button
+          <Link
+            to={`/chat/user/${contact.id}`}
             className="btn btn--light-purple"
-            onClick={() => navigate(`/chat/user/${contact.id}`)}
           >
             Message
-          </button>
+          </Link>
           <button
             className="btn btn--light-red"
             onClick={() => remove(contact.id, type)}
@@ -84,10 +89,16 @@ function Contact({ contact, type, accept, remove }) {
   return (
     <li className="list__item">
       <div className="list__item__image">
-        <img
-          src="https://source.unsplash.com/500x500/?selfie"
-          alt={contact.name}
-        />
+        <Link to={`/profile/${contact.id}`}>
+          <img
+            src={
+              contact.main_profile_image
+                ? contact.main_profile_image.url
+                : EmptyUserImage
+            }
+            alt={contact.name}
+          />
+        </Link>
       </div>
       <Content contact={contact} type={type} accept={accept} remove={remove} />
     </li>

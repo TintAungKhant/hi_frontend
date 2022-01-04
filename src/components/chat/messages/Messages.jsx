@@ -8,6 +8,7 @@ import "./messages.css";
 import Message from "../message/Message";
 import Loading from "../../../pages/loadings/loading/Loading";
 import Alert from "../../popups/alert/Alert";
+import EmptyUserImage from "../../../assets/empty_user_image.png";
 
 const hoc = (Child) => {
   return (props) => {
@@ -127,7 +128,7 @@ class Messages extends Component {
       messages: [],
       current_user: {},
       ui_once_no_more_messages: false,
-      ui_loadings_get_messages: false,
+      ui_loadings_get_messages: true,
       ui_loadings_get_more_messages: false,
     };
 
@@ -161,6 +162,7 @@ class Messages extends Component {
         this.setCurrentUser();
         this.leaveSocket(prevProps.current_conver.id);
         this.listenSocket();
+        this.messages_block.scrollTop = this.messages_block.scrollHeight;
       }
     }
   }
@@ -291,7 +293,8 @@ class Messages extends Component {
     if (window.screen.width <= 768) {
       if (this.props.current_user_id) {
         return {
-          display: "block",
+          display: "flex",
+          flexDirection: "column",
           width: "100%",
         };
       } else {
@@ -303,9 +306,12 @@ class Messages extends Component {
   };
 
   render() {
-    if (this.state.ui_loadings_get_messages) {
+    if (this.state.ui_loadings_get_messages && this.props.current_conver.id) {
       return (
-        <div className="chat__section chat__section--no-messages" style={this.calcStyle()}>
+        <div
+          className="chat__section chat__section--no-messages"
+          style={this.calcStyle()}
+        >
           <Loading />
         </div>
       );
@@ -313,7 +319,10 @@ class Messages extends Component {
 
     if (!this.state.messages.length && !this.props.current_user_id) {
       return (
-        <div className="chat__section chat__section--no-messages" style={this.calcStyle()}>
+        <div
+          className="chat__section chat__section--no-messages"
+          style={this.calcStyle()}
+        >
           <div className="chat__section__greeting">
             <h2>HI!</h2>
           </div>
@@ -322,12 +331,19 @@ class Messages extends Component {
     }
 
     return (
-      <div className="chat__section chat__section--messages" style={this.calcStyle()}>
+      <div
+        className="chat__section chat__section--messages"
+        style={this.calcStyle()}
+      >
         <div className="chat__section__header">
           <div className="list__item">
             <div className="list__item__image">
               <img
-                src="https://source.unsplash.com/500x500/?selfie"
+                src={
+                  this.state.current_user.main_profile_image
+                    ? this.state.current_user.main_profile_image.url
+                    : EmptyUserImage
+                }
                 alt={this.state.current_user.name}
               />
             </div>
@@ -351,6 +367,7 @@ class Messages extends Component {
               (message_item, index) => {
                 return (
                   <Message
+                    profile_image_url={this.state.current_user.main_profile_image ? this.state.current_user.main_profile_image.url : EmptyUserImage}
                     self={message_item.user_id === this.props.authInfo.user.id}
                     messages={message_item.messages}
                     key={index}

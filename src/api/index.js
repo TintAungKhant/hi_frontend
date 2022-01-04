@@ -93,6 +93,12 @@ const postProfile = (data) => {
   return http.post("/profile", data);
 }
 
+const postProfileImage = (data) => {
+  return http.post("/profile/image", data, {
+    "Content-Type": "multipart/form-data"
+  });
+}
+
 export {
   postRegister,
   postLogin,
@@ -108,5 +114,6 @@ export {
   getMessages,
   postMessages,
   postBroadcastingAuth,
-  postProfile
+  postProfile,
+  postProfileImage
 };

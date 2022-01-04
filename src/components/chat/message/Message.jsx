@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import "./message.css";
+import AuthContext from "../../../contexts/AuthContext";
 import Image from "../../popups/image/Image";
+import EmptyUserImage from "../../../assets/empty_user_image.png";
 
 const MessageContent = ({ message }) => {
   const [showImagePopup, setShowImagePopup] = useState(false);
@@ -36,12 +38,12 @@ const MessageContent = ({ message }) => {
   );
 };
 
-const MessageLeft = function ({ messages }) {
+const MessageLeft = function ({ messages, profile_image_url }) {
   return (
     <>
       <div className="message message--left">
         <div className="message__avatar">
-          <img src="https://source.unsplash.com/500x800/?selfie" alt="Tom" />
+          <img src={profile_image_url} />
         </div>
         <div className="message__contents">
           {messages.map((message, index) => {
@@ -71,20 +73,36 @@ const MessageRight = function ({ messages }) {
           })}
         </div>
         <div className="message__avatar">
-          <img src="https://source.unsplash.com/500x700/?selfie" alt="Tom" />
+          <AuthContext.Consumer>
+            {({ authInfo }) => {
+              return (
+                <img
+                  src={
+                    authInfo.user.main_profile_image
+                      ? authInfo.user.main_profile_image.url
+                      : EmptyUserImage
+                  }
+                  alt="Tom"
+                />
+              );
+            }}
+          </AuthContext.Consumer>
         </div>
       </div>
     </>
   );
 };
 
-function Message({ self, messages }) {
+function Message({ profile_image_url, self, messages }) {
   return (
     <>
       {self ? (
         <MessageRight messages={messages} />
       ) : (
-        <MessageLeft messages={messages} />
+        <MessageLeft
+          messages={messages}
+          profile_image_url={profile_image_url}
+        />
       )}
     </>
   );

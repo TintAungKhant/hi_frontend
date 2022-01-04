@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router";
 import _ from "lodash";
+import EmptyUserImage from "../../../assets/empty_user_image.png";
 
 function Conversation({ conversation, auth_user_id, current_user_id }) {
   const navigate = useNavigate();
@@ -43,7 +44,7 @@ function Conversation({ conversation, auth_user_id, current_user_id }) {
     >
       <div className="list__item__image">
         <img
-          src="https://source.unsplash.com/500x500/?selfie"
+          src={user.main_profile_image ? user.main_profile_image.url : EmptyUserImage}
           alt={user.name}
         />
       </div>

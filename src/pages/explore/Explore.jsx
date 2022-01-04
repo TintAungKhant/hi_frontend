@@ -1,7 +1,9 @@
 import React, { Component, createRef } from "react";
 import _ from "lodash";
+import { Link } from "react-router-dom";
 import Loading from "../loadings/loading/Loading";
 import { getFriendsExplore, postAddContact } from "../../api";
+import EmptyUserImage from "../../assets/empty_user_image.png";
 
 class Explore extends Component {
   constructor() {
@@ -121,14 +123,20 @@ class Explore extends Component {
                   return (
                     <li className="list__item" key={contact.id}>
                       <div className="list__item__image">
-                        <img
-                          src="https://source.unsplash.com/500x500/?selfie"
-                          alt={contact.name}
-                        />
+                        <Link to={`/profile/${contact.id}`}>
+                          <img
+                            src={contact.main_profile_image
+                              ? contact.main_profile_image.url
+                              : EmptyUserImage}
+                            alt={contact.name}
+                          />
+                        </Link>
                       </div>
                       <div className="list__item__content">
                         <div className="list__item__content__title">
-                          {contact.name}
+                          <Link to={`/profile/${contact.id}`}>
+                            {contact.name}
+                          </Link>
                         </div>
                       </div>
                       <div className="list__item_action">
