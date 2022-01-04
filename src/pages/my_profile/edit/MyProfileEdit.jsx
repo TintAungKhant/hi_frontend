@@ -4,6 +4,7 @@ import AuthContext from "../../../contexts/AuthContext";
 import ValidationError from "../../../components/validation_error/ValidationError";
 import { postProfile } from "../../../api";
 import FormAlert from "../../../components/form_alert/FormAlert";
+import { Link } from "react-router-dom";
 
 export class MyProfileEdit extends Component {
   // eslint-disable-next-line no-empty-pattern
@@ -195,6 +196,13 @@ export class MyProfileEdit extends Component {
                 />
               </div>
             </form>
+            <div className="mt-3 text-purple">
+            If you want to change your profile images,
+            <strong>
+              <Link to="/profile/me/images/edit">Click Here</Link>
+            </strong>
+            !
+            </div>
           </div>
           <div className="card__footer">
             <button

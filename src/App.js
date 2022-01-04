@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router";
 import AuthContext from "./contexts/AuthContext";
 import { getProfile } from "./api";
 import "./App.css";
@@ -14,6 +14,7 @@ import {
   MyProfileEdit,
   Profile,
 } from "./pages";
+import { MyProfileImagesEdit } from "./pages/my_profile/images_edit/MyProfileImagesEdit";
 
 const RequiredAuth = ({ children }) => {
   return (
@@ -75,7 +76,7 @@ function App() {
   }, []);
 
   if (loading) {
-    return <AppStarts/>;
+    return <AppStarts />;
   }
 
   return (
@@ -134,12 +135,28 @@ function App() {
             }
           />
           <Route path="profile">
+            <Route
+              path=":user_id"
+              element={
+                <RequiredAuth>
+                  <Profile />
+                </RequiredAuth>
+              }
+            />
             <Route path="me">
               <Route
                 path="edit"
                 element={
                   <RequiredAuth>
                     <MyProfileEdit />
+                  </RequiredAuth>
+                }
+              />
+              <Route
+                path="images/edit"
+                element={
+                  <RequiredAuth>
+                    <MyProfileImagesEdit />
                   </RequiredAuth>
                 }
               />
@@ -153,6 +170,7 @@ function App() {
               }
             />
           </Route>
+          <Route path="/*" element={<Navigate to="/explore" />}></Route>
         </Routes>
       </AuthContext.Provider>
     </div>
