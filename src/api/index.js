@@ -27,7 +27,7 @@ const postLogout = () => {
 }
 
 const getProfile = (id = "") => {
-  return http.get(`/profile/${id}`);
+  return http.get(`/profile${id ? "/"+id : ""}`);
 }
 
 const getFriendsExplore = (params) => {
