@@ -1,7 +1,7 @@
 import axios from "axios"
 import Cookies from "js-cookie";
 
-const baseURL = "http://localhost:8000/api/v1";
+const baseURL = process.env.REACT_APP_BASE_URL;
 
 function getCsrfCookie() {
   axios.defaults.withCredentials = true;
