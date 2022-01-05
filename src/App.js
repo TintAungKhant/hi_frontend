@@ -63,6 +63,7 @@ function App() {
         });
       })
       .catch(() => {
+        localStorage.removeItem("BEARER_TOKEN");
         setAuthInfo({
           auth: false,
           user: {},

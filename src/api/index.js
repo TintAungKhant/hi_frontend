@@ -1,21 +1,15 @@
 import axios from "axios"
-import Cookies from "js-cookie";
 
 const baseURL = process.env.REACT_APP_BASE_URL;
 
-function getCsrfCookie() {
-  axios.defaults.withCredentials = true;
-  return axios.get(`${baseURL}/csrf-cookie`);
-}
-
 const http = axios.create({
   baseURL,
-  withCredentials: true,
 });
 
 http.interceptors.request.use(async (request) => {
-  if (!Cookies.get("XSRF-TOKEN")) {
-    await getCsrfCookie();
+  let bearer_token = localStorage.getItem("BEARER_TOKEN");
+  if (bearer_token) {
+    request.headers.Authorization = `Bearer ${bearer_token}`;
   }
   return request;
 });

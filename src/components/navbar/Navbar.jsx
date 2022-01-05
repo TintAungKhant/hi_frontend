@@ -44,6 +44,7 @@ function Navbar() {
         auth: false,
         user: {},
       });
+      localStorage.removeItem("BEARER_TOKEN");
       navigate("/login", { replace: true });
     });
   }

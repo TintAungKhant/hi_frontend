@@ -47,6 +47,7 @@ export class Login extends Component {
           auth: true,
           user: res.data.data.user,
         });
+        localStorage.setItem("BEARER_TOKEN", res.data.data.token);
       })
       .catch((err) => {
         if (err.response.status === 422) {
