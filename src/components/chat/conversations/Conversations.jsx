@@ -139,6 +139,10 @@ class Conversations extends Component {
   };
 
   render() {
+    if (!this.state.conversations.length) {
+      return <></>;
+    }
+    
     return (
       <div
         className="chat__section chat__section--conversations"
