@@ -1,11 +1,10 @@
-import React, { Component, createRef } from "react";
+import React, { Component, createRef, useState } from "react";
 import _ from "lodash";
 import AuthContext from "../../../contexts/AuthContext";
 import { postProfileImage } from "../../../api";
 import "./my_profile_images_edit.css";
 import EmptyUserImage from "../../../assets/empty_user_image.png";
 import Loader from "../../../assets/loader.gif";
-import { useState } from "react/cjs/react.development";
 import Alert from "../../../components/popups/alert/Alert";
 import moment from "moment";
 
