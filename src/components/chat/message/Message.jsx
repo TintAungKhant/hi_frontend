@@ -1,110 +1,69 @@
 import React, { useState } from "react";
-import "./message.css";
-import AuthContext from "../../../contexts/AuthContext";
-import Image from "../../popups/image/Image";
-import EmptyUserImage from "../../../assets/empty_user_image.png";
-
-const MessageContent = ({ message }) => {
-  const [showImagePopup, setShowImagePopup] = useState(false);
-
-  if (message.type === "text") {
-    return <div>{message.text}</div>;
-  }
-
-  const calcStyle = () => {
-    let style = {
-      width: "300px",
-      height: "300px",
-      objectFit: "cover",
-      cursor: "pointer",
-    };
-    if (window.screen.width <= 768) {
-      return { ...style, width: "200px", height: "200px" };
-    }
-    return style;
-  };
-
-  return (
-    <div>
-      {showImagePopup && (
-        <Image url={message.url} close={() => setShowImagePopup(false)} />
-      )}
-      <img
-        src={message.url}
-        style={calcStyle()}
-        onClick={() => setShowImagePopup(true)}
-      />
-    </div>
-  );
-};
-
-const MessageLeft = function ({ messages, profile_image_url }) {
-  return (
-    <>
-      <div className="message message--left">
-        <div className="message__avatar">
-          <img src={profile_image_url} />
-        </div>
-        <div className="message__contents">
-          {messages.map((message, index) => {
-            return (
-              <div className="message__content" key={index}>
-                <MessageContent message={message} />
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </>
-  );
-};
-
-const MessageRight = function ({ messages }) {
-  return (
-    <>
-      <div className="message message--right">
-        <div className="message__contents">
-          {messages.map((message, index) => {
-            return (
-              <div className="message__content" key={index}>
-                <MessageContent message={message} />
-              </div>
-            );
-          })}
-        </div>
-        <div className="message__avatar">
-          <AuthContext.Consumer>
-            {({ authInfo }) => {
-              return (
-                <img
-                  src={
-                    authInfo.user.main_profile_image
-                      ? authInfo.user.main_profile_image.url
-                      : EmptyUserImage
-                  }
-                  alt="Tom"
-                />
-              );
-            }}
-          </AuthContext.Consumer>
-        </div>
-      </div>
-    </>
-  );
-};
+import Popup from "../../popup/Popup";
 
 function Message({ profile_image_url, self, messages }) {
+  const [viewImage, setViewImage] = useState(false);
+  const [imageUrl, setImageUrl] = useState();
+
   return (
-    <>
-      {self ? (
-        <MessageRight messages={messages} />
-      ) : (
-        <MessageLeft
-          messages={messages}
-          profile_image_url={profile_image_url}
-        />
+    <div className="flex items-start mb-2">
+      {viewImage && (
+        <Popup>
+          <div className="card min-w-[20rem] max-w-[90%] bg-gray-900">
+            <div className="card-body">
+              <img src={imageUrl} className={"max-h-[70vh]"} />
+            </div>
+            <div className="card-footer flex justify-center">
+              <button
+                className="btn btn-indigo mr-1"
+                onClick={() => setViewImage(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </Popup>
       )}
-    </>
+
+      {!self && (
+        <div className="w-9 flex-shrink-0 rounded-md overflow-hidden">
+          <img src={profile_image_url} className="object-cover w-10 h-10"/>
+        </div>
+      )}
+
+      <div
+        className={
+          self
+            ? "flex flex-col gap-2 items-end w-full"
+            : "ml-3 flex flex-col gap-2 items-start w-full"
+        }
+      >
+        {messages.map((message, index) => {
+          if (message.type === "text") {
+            return (
+              <div
+                className="bg-indigo-400 p-2 rounded-md max-w-lg"
+                key={index}
+              >
+                {message.text}
+              </div>
+            );
+          } else {
+            return (
+              <div
+                className="cursor-pointer bg-indigo-400 p-2 rounded-md"
+                key={index}
+                onClick={() => setImageUrl(message.url) + setViewImage(true)}
+              >
+                <div className="overflow-hidden">
+                  <img src={message.url} className="object-cover w-44 h-44" />
+                </div>
+              </div>
+            );
+          }
+        })}
+      </div>
+    </div>
   );
 }
 

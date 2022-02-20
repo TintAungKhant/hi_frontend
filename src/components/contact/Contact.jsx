@@ -2,107 +2,45 @@ import React from "react";
 import { Link } from "react-router-dom";
 import EmptyUserImage from "../../assets/empty_user_image.png";
 
-const Content = ({ contact, type, accept, remove }) => {
-  if (type === "request") {
-    return (
-      <>
-        <div className="list__item__content">
-          <div className="list__item__content__title">
-            <Link to={`/profile/${contact.id}`}>{contact.name}</Link>
-          </div>
-        </div>
-        <div className="list__item_action">
-          <button
-            className="btn btn--light-purple"
-            onClick={() => accept(contact.id)}
-          >
-            Accept
-          </button>
-          <button
-            className="btn btn--light-red"
-            onClick={() => remove(contact.id, type)}
-          >
-            Reject
-          </button>
-        </div>
-      </>
-    );
-  } else if (type === "online") {
-    return (
-      <>
-        <div className="list__item__content">
-          <div className="list__item__content__title">
-            <Link to={`/profile/${contact.id}`}>{contact.name}</Link>
-          </div>
-          <div className="list__item__content__text">
-            <span className="online-badge">Online</span>
-          </div>
-        </div>
-        <div className="list__item_action">
-          <Link
-            to={`/chat/user/${contact.id}`}
-            className="btn btn--light-purple"
-          >
-            Message
-          </Link>
-          <button
-            className="btn btn--light-red"
-            onClick={() => remove(contact.id, type)}
-          >
-            Unfriend
-          </button>
-        </div>
-      </>
-    );
-  } else if (type === "offline") {
-    return (
-      <>
-        <div className="list__item__content">
-          <div className="list__item__content__title">
-            <Link to={`/profile/${contact.id}`}>{contact.name}</Link>
-          </div>
-          <div className="list__item__content__text">
-            <span className="offline-badge">Offline</span>
-          </div>
-        </div>
-        <div className="list__item_action">
-          <Link
-            to={`/chat/user/${contact.id}`}
-            className="btn btn--light-purple"
-          >
-            Message
-          </Link>
-          <button
-            className="btn btn--light-red"
-            onClick={() => remove(contact.id, type)}
-          >
-            Unfriend
-          </button>
-        </div>
-      </>
-    );
-  }
-  return <></>;
-};
-
-function Contact({ contact, type, accept, remove }) {
+const Contact = ({ contact, actions, no_border }) => {
   return (
-    <li className="list__item">
-      <div className="list__item__image">
-        <Link to={`/profile/${contact.id}`}>
-          <img
-            src={
-              contact.main_profile_image
-                ? contact.main_profile_image.url
-                : EmptyUserImage
-            }
-            alt={contact.name}
-          />
-        </Link>
+    <div className={no_border ? "p-3 md:rounded-md" : "p-3 border-b border-indigo-800 md:border-b-0 md:rounded-md"}>
+      <div className="flex items-center">
+        <div className="w-10 rounded-md overflow-hidden">
+          <Link to={`/profile/${contact.id}`}>
+            <img
+              src={
+                contact.main_profile_image
+                  ? contact.main_profile_image.url
+                  : EmptyUserImage
+              }
+              alt={contact.name}
+              className="object-cover w-10 h-10"
+            />
+          </Link>
+        </div>
+        <div className="px-2 ">
+          <div className="font-semibold">
+            <Link to={`/profile/${contact.id}`}>{contact.name}</Link>
+          </div>
+          <div className="d-flex">
+            {contact.online ? (
+              <>
+                <span className="w-2 h-2 mr-1 rounded-full bg-green-400 inline-block"></span>
+                <span className="text-sm">Online</span>
+              </>
+            ) : (
+              <>
+                <span className="w-2 h-2 mr-1 rounded-full bg-gray-600 inline-block"></span>
+                <span className="text-sm">Offline</span>
+              </>
+            )}
+          </div>
+        </div>
       </div>
-      <Content contact={contact} type={type} accept={accept} remove={remove} />
-    </li>
+      {actions}
+    </div>
   );
-}
+};
 
 export default Contact;

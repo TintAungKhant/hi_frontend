@@ -1,5 +1,5 @@
-import React, { useEffect, useState, createRef } from "react";
-import { Link, useParams } from "react-router-dom";
+import React, { createRef } from "react";
+import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import moment from "moment";
 import _ from "lodash";
 import {
@@ -8,284 +8,282 @@ import {
   postAddContact,
   postDeleteContact,
 } from "../../api";
-import EmptyUserImage from "../../assets/empty_user_image.png";
+import ProfileImage from "../../components/profile_image/ProfileImage";
+import LoadingImage from "../../assets/loading.gif";
+import Contact from "../../components/contact/Contact";
+import Popup from "../../components/popup/Popup";
+import { disableRefs, enableRefs } from "../../helpers";
 import AuthContext from "../../contexts/AuthContext";
-import "./profile.css";
-import Loading from "../loadings/loading/Loading";
-import YesNo from "../../components/popups/yes_no/YesNo";
 
-function Profile() {
-  let { user_id } = useParams();
+class Profile extends React.Component {
+  static contextType = AuthContext;
 
-  const [user, setUser] = useState();
-  const [userImages, setUserImages] = useState({
-    profile_image_url: null,
-    featured_image_1_url: null,
-    featured_image_2_url: null,
-    featured_image_3_url: null,
-    featured_image_4_url: null,
-    featured_image_5_url: null,
-  });
-  const [loading, setLoading] = useState(true);
-  const [removePopup, setRemovePopup] = useState(false);
+  // eslint-disable-next-line no-empty-pattern
+  constructor() {
+    super();
 
-  const buttons = {
-    add: createRef(),
-    accept: createRef(),
-    remove_1: createRef(),
-    remove_2: createRef(),
-    message: createRef(),
-  };
+    this.state = {
+      user: null,
+      profile_image: null,
+      featured_image_1: null,
+      featured_image_2: null,
+      featured_image_3: null,
+      featured_image_4: null,
+      featured_image_5: null,
+      ui_loadings_get_profile: true,
+      ui_popups_remove_contact: false,
+    };
 
-  useEffect(() => {
-    if (user_id) {
-      getProfile();
-    }
-  }, []);
+    this.ref = {
+      buttons: {
+        add: createRef(),
+        accept: createRef(),
+        remove_1: createRef(),
+        remove_2: createRef(),
+      },
+    };
+  }
 
-  const getProfile = () => {
-    setLoading(true);
-    apiGetProfile(user_id).then((res) => {
+  async componentDidMount() {
+    await apiGetProfile(this.props.user_id).then((res) => {
       if (res.data.data.profile.id) {
-        setUser(res.data.data.profile);
+        this.setState({ ...this.state, user: res.data.data.profile });
 
-        let user_images = { ...userImages };
+        const {
+          ["user"]: remove1,
+          ["ui_loadings_get_profile"]: remove2,
+          ["ui_popups_remove_contact"]: remove3,
+          ...user_images
+        } = this.state;
+        
         let i = 1;
         _.each(res.data.data.profile.profile_images, function (profile_image) {
           if (profile_image.type != 1) {
-            user_images["featured_image_" + i + "_url"] = profile_image.url;
+            user_images["featured_image_" + i] = {
+              id: profile_image.id,
+              url: profile_image.url,
+            };
             i++;
           }
         });
-        user_images.profile_image_url = res.data.data.profile.main_profile_image
-          ? res.data.data.profile.main_profile_image.url
+        user_images.profile_image = res.data.data.profile.main_profile_image
+          ? {
+              id: res.data.data.profile.main_profile_image.id,
+              url: res.data.data.profile.main_profile_image.url,
+            }
           : null;
 
-        setUserImages(user_images);
-      }
-      setLoading(false);
-    });
-  };
-
-  const add = () => {
-    disableButtons();
-    postAddContact(user_id).then(() => {
-      setUser({ ...user, contact_type: "waiting" });
-      disableButtons(false);
-    });
-  };
-
-  const accept = () => {
-    disableButtons();
-    postAcceptContact(user_id).then(() => {
-      setUser({ ...user, contact_type: "friend" });
-      disableButtons(false);
-    });
-  };
-
-  const remove = () => {
-    disableButtons();
-    postDeleteContact(user_id).then(() => {
-      setUser({ ...user, contact_type: null });
-      disableButtons(false);
-    });
-    setRemovePopup(false);
-  };
-
-  const disableButtons = (disable = true) => {
-    _.map(buttons, (button) => {
-      if (button.current) {
-        button.current.disabled = disable;
+        this.setState({ ...this.state, ...user_images });
       }
     });
-  };
 
-  const age = () => {
-    return Math.floor(
-      moment.duration(moment(new Date()).diff(moment(user.birthday))).asYears()
-    );
-  };
-
-  if (loading) {
-    return (
-      <section className="container py-4">
-        <div className="card mb-3">
-          <div className="card__body">
-            <Loading />
-          </div>
-        </div>
-      </section>
-    );
+    this.setState({ ...this.state, ui_loadings_get_profile: false });
   }
 
-  return (
-    <>
-      {removePopup && (
-        <YesNo
-          title="Remove as friend"
-          message="Are you sure that you want to remove this person from your friend list?"
-          yes={remove}
-          no={() => {
-            setRemovePopup(false);
-          }}
-        />
-      )}
-      <section className="container py-4">
-        <div className="card mb-3">
-          <div className="card__header">
-            <div className="list__item p-0">
-              <div className="list__item__image">
-                <img
-                  alt={user.name}
-                  src={
-                    userImages.profile_image_url
-                      ? userImages.profile_image_url
-                      : EmptyUserImage
-                  }
-                />
-              </div>
-              <div className="list__item__content">
-                <div className="list__item__content__title">{user.name}</div>
-                {user.contact_type === "friend" &&
-                  (user.online ? (
-                    <div className="list__item__content__text">
-                      <span className="online-badge">Online</span>
-                    </div>
-                  ) : (
-                    <div className="list__item__content__text">
-                      <span className="offline-badge">Offline</span>
-                    </div>
-                  ))}
-              </div>
-              <AuthContext.Consumer>
-                {({ authInfo }) => {
-                  if (authInfo.user.id != user_id) {
-                    return (
-                      <div className="list__item_action">
-                        {user.contact_type === "friend" && (
-                          <>
-                            <Link
-                              to={`/chat/user/${user.id}`}
-                              className="btn btn--light-purple"
-                            >
-                              Message
-                            </Link>
-                            <button
-                              className="btn btn--light-red"
-                              ref={buttons.remove_1}
-                              onClick={() => {
-                                setRemovePopup(true);
-                              }}
-                            >
-                              Unfriend
-                            </button>
-                          </>
-                        )}
-                        {user.contact_type === "deciding" && (
-                          <>
-                            <button
-                              className="btn btn--light-purple"
-                              ref={buttons.accept}
-                              onClick={accept}
-                            >
-                              Accept
-                            </button>
-                            <button
-                              className="btn btn--light-red"
-                              ref={buttons.remove_2}
-                            >
-                              Reject
-                            </button>
-                          </>
-                        )}
-                        {user.contact_type === "waiting" && (
-                          <button className="btn btn--light-purple" disabled>
-                            Add
-                          </button>
-                        )}
-                        {user.contact_type === null && (
-                          <button
-                            className="btn btn--light-purple"
-                            ref={buttons.add}
-                            onClick={add}
-                          >
-                            Add
-                          </button>
-                        )}
-                      </div>
-                    );
-                  }
-                }}
-              </AuthContext.Consumer>
-            </div>
-          </div>
-          <div className="card__body">
-            <div className="people">
-              <div className="people__profile-image">
-                <img
-                  alt={user.name}
-                  src={
-                    userImages.profile_image_url
-                      ? userImages.profile_image_url
-                      : EmptyUserImage
-                  }
-                />
-              </div>
-              <div className="people__info">
-                <div className="people__info--name">{user.name}</div>
-                <div className="people__info--age">{age()} years old</div>
-                <div className="people__info--gender">
-                  {user.gender == 1 ? "Male" : "Female"}
+  add = () => {
+    disableRefs([..._.values(this.ref.buttons)]);
+    postAddContact(this.props.user_id).then(() => {
+      this.setState({
+        ...this.state,
+        user: { ...this.state.user, contact_type: "waiting" },
+      });
+      enableRefs([..._.values(this.ref.buttons)]);
+    });
+  };
+
+  accept = () => {
+    disableRefs([..._.values(this.ref.buttons)]);
+    postAcceptContact(this.props.user_id).then(() => {
+      this.setState({
+        ...this.state,
+        user: { ...this.state.user, contact_type: "friend" },
+      });
+      enableRefs([..._.values(this.ref.buttons)]);
+    });
+  };
+
+  remove = () => {
+    disableRefs([..._.values(this.ref.buttons)]);
+    postDeleteContact(this.props.user_id).then(() => {
+      this.setState({
+        ...this.state,
+        user: { ...this.state.user, contact_type: null },
+        ui_popups_remove_contact: false,
+      });
+      enableRefs([..._.values(this.ref.buttons)]);
+    });
+  };
+
+  age = () => {
+    return Math.floor(
+      moment
+        .duration(moment(new Date()).diff(moment(this.state.user.birthday)))
+        .asYears()
+    );
+  };
+
+  render() {
+    if (this.context.authInfo.user.id == this.props.user_id) {
+      return <Navigate to="/profile/me" />;
+    }
+
+    return (
+      <div className="mt-[54px]">
+        <div className="container mx-auto p-4 md:px-0">
+          {this.state.ui_popups_remove_contact && (
+            <Popup>
+              <div className="card min-w-[20rem] max-w-[90%] bg-gray-900">
+                <div className="card-header">
+                  <h1 className="text-lg">Remove a contact?</h1>
+                </div>
+                <div className="card-body">Are you sure?</div>
+                <div className="card-footer">
+                  <button className="btn btn-red mr-1" onClick={this.remove}>
+                    Yes
+                  </button>
+                  <button
+                    className="btn btn-indigo"
+                    onClick={() => {
+                      this.setState({
+                        ...this.state,
+                        ui_popups_remove_contact: false,
+                      });
+                    }}
+                  >
+                    Cancel
+                  </button>
                 </div>
               </div>
-              <div className="people__images">
-                {userImages.featured_image_1_url && (
-                  <div className="people__images__image">
-                    <img
-                      alt={user.name}
-                      src={userImages.featured_image_1_url}
-                    />
-                  </div>
-                )}
-                {userImages.featured_image_2_url && (
-                  <div className="people__images__image">
-                    <img
-                      alt={user.name}
-                      src={userImages.featured_image_2_url}
-                    />
-                  </div>
-                )}
-                {userImages.featured_image_3_url && (
-                  <div className="people__images__image">
-                    <img
-                      alt={user.name}
-                      src={userImages.featured_image_3_url}
-                    />
-                  </div>
-                )}
-                {userImages.featured_image_4_url && (
-                  <div className="people__images__image">
-                    <img
-                      alt={user.name}
-                      src={userImages.featured_image_4_url}
-                    />
-                  </div>
-                )}
-                {userImages.featured_image_5_url && (
-                  <div className="people__images__image">
-                    <img
-                      alt={user.name}
-                      src={userImages.featured_image_5_url}
-                    />
-                  </div>
-                )}
+            </Popup>
+          )}
+
+          <div className="card mx-auto">
+            {this.state.user && (
+              <div className="card-header">
+                <Contact
+                  contact={this.state.user}
+                  no_border={true}
+                  actions={
+                    <>
+                      {this.state.user.contact_type === "friend" && (
+                        <>
+                          <Link
+                            to={`/chat/user/${this.state.user.id}`}
+                            className="btn btn-indigo mr-1"
+                          >
+                            Message
+                          </Link>
+                          <button
+                            className="btn btn-red"
+                            ref={this.ref.buttons.remove_1}
+                            onClick={() => {
+                              this.setState({
+                                ...this.state,
+                                ui_popups_remove_contact: true,
+                              });
+                            }}
+                          >
+                            Unfriend
+                          </button>
+                        </>
+                      )}
+                      {this.state.user.contact_type === "deciding" && (
+                        <>
+                          <button
+                            className="btn btn-indigo mr-1"
+                            ref={this.ref.buttons.accept}
+                            onClick={this.accept}
+                          >
+                            Accept
+                          </button>
+                          <button
+                            className="btn btn-red"
+                            ref={this.ref.buttons.remove_2}
+                            onClick={() => {
+                              this.setState({
+                                ...this.state,
+                                ui_popups_remove_contact: true,
+                              });
+                            }}
+                          >
+                            Reject
+                          </button>
+                        </>
+                      )}
+                      {this.state.user.contact_type === "waiting" && (
+                        <button className="btn btn-indigo" disabled>
+                          Add
+                        </button>
+                      )}
+                      {this.state.user.contact_type === null && (
+                        <button
+                          className="btn btn-indigo"
+                          ref={this.ref.buttons.add}
+                          onClick={this.add}
+                        >
+                          Add
+                        </button>
+                      )}
+                    </>
+                  }
+                />
               </div>
+            )}
+            <div className="card-body">
+              {this.state.ui_loadings_get_profile && (
+                <div className="p-3 rounded-md flex flex-col justify-center items-center">
+                  <div className="w-16">
+                    <img src={LoadingImage} />
+                  </div>
+                </div>
+              )}
+              {!this.state.ui_loadings_get_profile && (
+                <div>
+                  <ProfileImage
+                    name="profile_image"
+                    image={this.state.profile_image}
+                  />
+                  <div className="mx-auto text-center my-3">
+                    <div className="text-lg">{this.state.user.name}</div>
+                    <div className="font-base">{this.age()} years old</div>
+                    <div className="font-base">
+                      {this.state.user.gender == 1 ? "Male" : "Female"}
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-4 justify-center max-w-[44rem] mx-auto">
+                    <ProfileImage
+                      name="featured_image_1"
+                      image={this.state.featured_image_1}
+                    />
+                    <ProfileImage
+                      name="featured_image_2"
+                      image={this.state.featured_image_2}
+                    />
+                    <ProfileImage
+                      name="featured_image_3"
+                      image={this.state.featured_image_3}
+                    />
+                    <ProfileImage
+                      name="featured_image_4"
+                      image={this.state.featured_image_4}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
-      </section>
-    </>
-  );
+      </div>
+    );
+  }
 }
 
-export default Profile;
+const hoc = (Child) => {
+  return (props) => {
+    const { user_id } = useParams();
+    const navigate = useNavigate();
+    return <Child {...props} user_id={user_id} navigate={navigate} />;
+  };
+};
+
+export default hoc(Profile);

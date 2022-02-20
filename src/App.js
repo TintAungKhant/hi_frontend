@@ -4,17 +4,17 @@ import AuthContext from "./contexts/AuthContext";
 import { getProfile } from "./api";
 import "./App.css";
 import Navbar from "./components/navbar/Navbar";
-import AppStarts from "./pages/loadings/app_starts/AppStarts";
+import AppStarts from "./pages/app_starts/AppStarts";
 import {
   Login,
   Register,
   Chat,
   Explore,
   Friends,
-  MyProfileEdit,
+  MeView,
+  MeEdit,
   Profile,
 } from "./pages";
-import { MyProfileImagesEdit } from "./pages/my_profile/images_edit/MyProfileImagesEdit";
 
 const RequiredAuth = ({ children }) => {
   return (
@@ -146,18 +146,18 @@ function App() {
             />
             <Route path="me">
               <Route
-                path="edit"
+                path=""
                 element={
                   <RequiredAuth>
-                    <MyProfileEdit />
+                    <MeView />
                   </RequiredAuth>
                 }
               />
               <Route
-                path="images/edit"
+                path="edit"
                 element={
                   <RequiredAuth>
-                    <MyProfileImagesEdit />
+                    <MeEdit />
                   </RequiredAuth>
                 }
               />

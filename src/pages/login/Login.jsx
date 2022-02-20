@@ -4,6 +4,8 @@ import AuthContext from "../../contexts/AuthContext";
 import { postLogin } from "../../api";
 import ValidationError from "../../components/validation_error/ValidationError";
 import FormAlert from "../../components/form_alert/FormAlert";
+import FormTextInput from "../../components/form/text_input/FormTextInput";
+import { disableRefs, enableRefs } from "../../helpers";
 
 export class Login extends Component {
   static contextType = AuthContext;
@@ -31,7 +33,7 @@ export class Login extends Component {
   }
 
   login = () => {
-    this.loginLoading(true);
+    disableRefs([..._.values(this.ref.inputs), ..._.values(this.ref.buttons)]);
 
     this.setState({
       ui_errors_login: false,
@@ -59,82 +61,49 @@ export class Login extends Component {
         if (err.response.status === 401) {
           this.setState({ ...this.state, ui_errors_login: true });
         }
-        this.loginLoading(false);
+        enableRefs([ ..._.values(this.ref.inputs), ..._.values(this.ref.buttons)]);
       });
-  };
-
-  loginLoading = (loading = false) => {
-    if (loading) {
-      _.each(this.ref.inputs, function (input) {
-        input.current.disabled = true;
-      });
-      this.ref.buttons.login.current.disabled = true;
-
-      return;
-    }
-
-    _.each(this.ref.inputs, function (input) {
-      if (input.current) {
-        input.current.disabled = false;
-      }
-    });
-    this.ref.buttons.login.current.disabled = false;
-
-    return;
   };
 
   render() {
     return (
-      <section className="container py-4">
-        <div className="card">
-          <div className="card__header">
-            <h2>Login</h2>
-          </div>
-          <div className="card__body">
-            <form className="form">
+      <div className="pt-[54px]">
+        <div className="container mx-auto py-4">
+          <div className="card max-w-2xl mx-auto">
+            <div className="card-header">
+              <h1 className="text-lg font-semibold">Login</h1>
+            </div>
+            <div className="card-body">
               {this.state.ui_errors_login && (
-                <FormAlert
-                  msg={"Your login credentials are wrong!"}
-                  type={"red"}
-                />
+                <div className="bg-red-500 p-3 rounded-md mb-4">
+                  Your login credentials are wrong!
+                </div>
               )}
-              <div className="form__input text-input">
-                <label htmlFor="email">Email</label>
-                <input
-                  type="email"
-                  placeholder="Email"
-                  id="email"
-                  ref={this.ref.inputs.email}
-                />
-                <ValidationError
-                  errors={this.state.ui_errors_validations.email}
-                />
-              </div>
-              <div className="form__input text-input">
-                <label htmlFor="password">Password</label>
-                <input
-                  type="password"
-                  placeholder="Password"
-                  id="password"
-                  ref={this.ref.inputs.password}
-                />
-                <ValidationError
-                  errors={this.state.ui_errors_validations.password}
-                />
-              </div>
-            </form>
-          </div>
-          <div className="card__footer">
-            <button
-              className="btn btn--light-purple"
-              onClick={this.login}
-              ref={this.ref.buttons.login}
-            >
-              Login
-            </button>
+              <FormTextInput
+                label="Email"
+                type="email"
+                ref={this.ref.inputs.email}
+                errors={this.state.ui_errors_validations.email}
+              />
+              <FormTextInput
+                label="Password"
+                type="password"
+                ref={this.ref.inputs.password}
+                errors={this.state.ui_errors_validations.password}
+              />
+            </div>
+            <div className="card-footer">
+              <button
+                className="btn btn-indigo"
+                ref={this.ref.buttons.login}
+                onClick={this.login}
+              >
+                Login
+              </button>
+            </div>
           </div>
         </div>
-      </section>
+      </div>
     );
   }
 }

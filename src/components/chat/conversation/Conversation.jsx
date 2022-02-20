@@ -1,69 +1,100 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router";
+import React, { useState, useEffect, useContext } from "react";
+import { useNavigate, useParams } from "react-router";
 import _ from "lodash";
+import AuthContext from "../../../contexts/AuthContext.js";
 import EmptyUserImage from "../../../assets/empty_user_image.png";
 
-function Conversation({ conversation, auth_user_id, current_user_id }) {
+function Conversation({ conversation }) {
   const navigate = useNavigate();
+  const { authInfo } = useContext(AuthContext);
+  const { user_id: current_user_id } = useParams();
 
   const [user, setUser] = useState({});
 
   useEffect(() => {
     setUser(
-      _.filter(conversation.users, (user) => {
-        return user.id != auth_user_id;
-      })[0]
+      _.find(conversation.users, (user) => {
+        return user.id != authInfo.user.id;
+      })
     );
   }, []);
 
-  const messageContent = (conversation) => {
-    if (conversation.latest_message.type === "text") {
-      if (conversation.latest_message.user_id == auth_user_id) {
-        return <div>You: {conversation.latest_message.messageable.text}</div>;
+  if (!user) {
+    return <></>;
+  }
+
+  return (
+    <div
+      className={
+        current_user_id == user.id
+          ? "conversation-container active"
+          : "conversation-container"
       }
-      return <div>{conversation.latest_message.messageable.text}</div>;
-    }
-    if (conversation.latest_message.user_id == auth_user_id) {
+      onClick={() => navigate(`/chat/user/${user.id}`)}
+    >
+      <div className="flex items-start">
+        <div className="w-10 flex-shrink-0 rounded-md overflow-hidden">
+          <img
+            src={
+              user.main_profile_image
+                ? user.main_profile_image.url
+                : EmptyUserImage
+            }
+            className="object-cover w-10 h-10 cursor-pointer"
+          />
+        </div>
+        <div className="px-2 overflow-hidden">
+          <div className="font-semibold">{user.name}</div>
+          <div className="flex">
+            <LatestMessage latest_message={conversation.latest_message} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const LatestMessage = ({ latest_message }) => {
+  const { authInfo } = useContext(AuthContext);
+
+  if (latest_message.type === "text") {
+    if (latest_message.user_id == authInfo.user.id) {
       return (
-        <div>
-          You: Sent an image&nbsp;<i className="fas fa-image"></i>
+        <div className="flex">
+          <span className="font-semibold mr-1">You:</span>
+          <span className="text-truncate">
+            {latest_message.messageable.text}
+          </span>
+        </div>
+      );
+    } else {
+      return (
+        <div className="flex">
+          <span className="text-truncate">
+            {latest_message.messageable.text}
+          </span>
         </div>
       );
     }
+  }
+  if (latest_message.user_id == authInfo.user.id) {
     return (
-      <div>
-        Sent an image&nbsp;<i className="fas fa-image"></i>
+      <div className="flex">
+        <span className="font-semibold mr-1">You:</span>
+        <span className="text-truncate">
+          Sent an image<i className="fas fa-image ml-2"></i>
+        </span>
       </div>
     );
-  };
-
-  return (
-    <li
-      className={`list__item ${current_user_id == user.id ? "active" : ""}`}
-      onClick={() => navigate(`/chat/user/${user.id}`)}
-    >
-      <div className="list__item__image">
-        <img
-          src={user.main_profile_image ? user.main_profile_image.url : EmptyUserImage}
-          alt={user.name}
-        />
+  } else {
+    return (
+      <div className="flex">
+        <span className="text-truncate">
+          Sent an image<i className="fas fa-image ml-2"></i>
+        </span>
       </div>
-      <div className="list__item__content">
-        <div className="d-flex justify-content-between align-items-center">
-          <div className="d-flex align-items-center">
-            <div className="list__item__content__title mr-1">{user.name}</div>
-            {/* <span className="badge">12</span> */}
-          </div>
-          <div>
-            {/* <span className="text--light-dark text--bold">12h</span> */}
-          </div>
-        </div>
-        <div className="list__item__content__text text-truncate">
-          {messageContent(conversation)}
-        </div>
-      </div>
-    </li>
-  );
-}
+    );
+  }
+};
 
 export default Conversation;

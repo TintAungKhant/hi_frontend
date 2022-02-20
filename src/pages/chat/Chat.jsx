@@ -1,45 +1,56 @@
-import React, { useState, useEffect, useMemo} from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import "./chat.css";
+import _ from "lodash";
 import ChatContext from "../../contexts/ChatContext";
-import { getConversation } from "../../api";
-import Conversations from "../../components/chat/conversations/Conversations";
-import Messages from "../../components/chat/messages/Messages";
-import socket from "../../socket";
-
-const MemoConversations = React.memo(() => {
-  return <Conversations socket={socket}/>;
-});
-
-const MemoMessages = React.memo(() => {
-  return <Messages socket={socket}/>;
-});
+import { getConversation, getConversations, getMessages } from "../../api";
+import ConversationSection from "../../components/chat/conversation_section/ConversationSection";
+import MessageSection from "../../components/chat/message_section/MessageSection";
+import LoadingImage from "../../assets/loading.gif";
 
 function Chat() {
-  const [currentConver, setCurrentConver] = useState({});
+  const [currentConversation, setCurrentConversation] = useState({});
+  const [loading, setLoading] = useState(true);
 
-  const { user_id } = useParams();
+  const { user_id: current_user_id } = useParams();
 
   useEffect(() => {
-    if (user_id) {
-      getConversation({ user_id }).then((res) => {
-        setCurrentConver(res.data.data.conversation);
+    if (current_user_id) {
+      getConversation({ user_id: current_user_id }).then((res) => {
+        setCurrentConversation(res.data.data.conversation);
+        setLoading(false);
       });
+    } else {
+      setLoading(false);
     }
-  }, [user_id]);
+  }, [current_user_id]);
 
   return (
-    <section className="chat">
-      <ChatContext.Provider
-        value={useMemo(
-          () => ({ current_conver: currentConver }),
-          [currentConver]
-        )}
-      >
-        <MemoConversations />
-        <MemoMessages />
-      </ChatContext.Provider>
-    </section>
+    <ChatContext.Provider
+      value={useMemo(
+        () => ({ current_conversation: currentConversation }),
+        [currentConversation]
+      )}
+    >
+      {loading && (
+        <div className="w-full h-[calc(100vh-54px)] flex flex-col justify-center items-center">
+          <div className="flex flex-col justify-center items-center">
+            <div className="w-20">
+              <img src={LoadingImage} />
+            </div>
+            <span className="font-semibold text-white">Loading Chat...</span>
+          </div>
+        </div>
+      )}
+
+      {!loading && (
+        <section className="flex text-white pt-[54px]">
+          <ConversationSection current_user_id={current_user_id}/>
+          {current_user_id && (
+            <MessageSection current_user_id={current_user_id} />
+          )}
+        </section>
+      )}
+    </ChatContext.Provider>
   );
 }
 
